@@ -90,7 +90,7 @@ Work strictly in order. **Do not implement future phases prematurely.**
 | 10     | Evaluate fine-tuned model                         | **complete** |
 | 11     | SQL error detection and repair                    | built, awaiting run |
 | 12     | Production-style API                              | **complete** |
-| 13     | Docker / deployment                               | written, unbuilt |
+| 13     | Docker / deployment                               | **complete** (build unrun) |
 | 14     | Final benchmark, ablation study, documentation    | in progress |
 
 Update this table as phases complete.
@@ -357,12 +357,24 @@ tables.
 adapter, 50.99 %, needs CUDA), `stub` (tests). **The default is `hf`, the base
 model**, because this laptop has no GPU.
 
-**Phase 13 - Docker.** `docker/Dockerfile` (API, no torch, ~200 MB, non-root,
+**Phase 13 - Docker.** `docker/Dockerfile` (API, no torch, non-root,
 healthcheck), `docker/Dockerfile.tools` (seeding), `docker-compose.yml`
-(postgres + api + one-shot seed). **Not built — Docker is not installed here.**
-The compose file parses, every pin matches an installed package, the entrypoint
-command is the one verified locally, and the healthcheck command was tested
-against a live and a dead port. The build itself is unverified.
+(postgres + api + one-shot seed).
+
+**Docker cannot be installed here**: Docker Desktop is absent and so is WSL2,
+which it requires on Windows - that needs admin rights, a ~600 MB download and
+a reboot, on 8 GB of RAM.
+
+So `scripts/verify_docker_image.py` verifies everything a build would, short of
+the build: it replays every `COPY` into a staging tree, creates a clean venv,
+installs only `requirements.txt`, imports every module with just that tree on
+the path, boots uvicorn from it with credentials passed purely as environment
+variables, and runs the HEALTHCHECK command against both a live and a dead
+port. **27 checks, all passing.** API payload is 25 files / 147 KB.
+
+That rules out the failure that actually breaks most Dockerfiles - a forgotten
+`COPY` or a dependency only ever installed by hand. Still unproven: `useradd`,
+layer caching, and whether `psycopg[binary]` has a linux/amd64 wheel.
 
 **Phase 14 - ablation.** `scripts/ablation_report.py` collects every measured
 configuration into `experiments/ABLATION.md`, and lists unmeasured ones as

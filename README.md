@@ -317,10 +317,13 @@ docker compose -f docker/docker-compose.yml up --build
 docker compose -f docker/docker-compose.yml --profile tools run --rm seed
 ```
 
-> **These images have not been built.** Docker is not installed on the
-> development machine. The compose file parses, every pin resolves, and the
-> healthcheck command was tested against a live and a dead port — but
-> `docker build` has not run. See [`docker/README.md`](docker/README.md).
+> **`docker build` has not been run** — Docker Desktop and WSL2 are not
+> installed on the development machine. The image *contents* are verified
+> though: `scripts/verify_docker_image.py` replays every `COPY` into a staging
+> tree, installs `requirements.txt` into a clean venv, and boots the API from
+> that tree alone with credentials from environment variables — 27 checks,
+> all passing. What remains unproven is Docker's own build execution.
+> See [`docker/README.md`](docker/README.md).
 
 ---
 
@@ -450,7 +453,7 @@ guessed — `featherless-ai` succeeds 6/6, and 6 workers are 6× faster than 1.
 - **The benchmark is template-generated.** Leakage-free by construction, but
   narrower than real user questions.
 - **`medium` difficulty did not improve** and is not yet explained.
-- **The Docker images have never been built.**
+- **`docker build` has never been run** — though the image contents and entrypoint are verified by `scripts/verify_docker_image.py` (27 checks).
 - **The API's default backend is the base model**, not the fine-tuned one.
 - **No authentication or rate limiting.** A caller who can ask questions can
   read any row the database role can read.

@@ -16,22 +16,56 @@ file.
 
 ---
 
-## Honest status
+## Verification status
 
-**These images have not been built.** Docker is not installed on the
-development machine (Windows 11, 8 GB RAM, no GPU), so what has been verified is:
+**The images have still not been built with `docker build`.** Docker Desktop is
+not installed on the development machine, and neither is WSL2, which Docker
+requires on Windows. Installing both needs administrator rights, a ~600 MB
+download and a reboot, on a laptop with 8 GB of RAM.
 
-| | |
+What *has* been verified goes well beyond reading the files. The most common
+way a Dockerfile fails is that the image is missing something the application
+needs — a `COPY` that was forgotten, or a dependency that was only ever
+installed by hand. That failure mode has been ruled out by **replaying the
+`COPY` directives into a staging tree and running the service from it with a
+clean interpreter**:
+
+| check | result |
 |---|---|
-| `docker-compose.yml` parses, 3 services, 1 volume | ✅ verified |
-| Every pin in `requirements.txt` matches an installed, working package | ✅ verified |
-| `uvicorn src.api.main:app` starts and serves `/health`, `/query`, `/schema` | ✅ verified locally |
-| The `HEALTHCHECK` command returns 0 when healthy, 1 when the port is dead | ✅ verified locally |
-| `docker build` succeeds | ❌ **not run** |
-| The composed stack starts | ❌ **not run** |
+| Every `COPY` source exists and lies inside the build context | ✅ both images |
+| `docker-compose.yml` parses; build contexts and dockerfile paths resolve | ✅ 3 services |
+| Base images pinned (`python:3.11-slim`) | ✅ |
+| Every pin in `requirements.txt` installs into a **fresh, empty venv** | ✅ exit 0 |
+| API image payload | 25 files, **147 KB** |
+| Tools image payload | 66 files, 23.2 MB |
+| `.env` absent from the staged tree, as `.dockerignore` mandates | ✅ |
+| Every API module imports with **only the image's files** on the path | ✅ |
+| `uvicorn src.api.main:app` boots from the staged tree, credentials from environment variables alone | ✅ |
+| `/health` returns `status: ok`, `database: true` | ✅ |
+| `/query` returns rows | ✅ |
+| The `HEALTHCHECK` command exits 0 against a healthy instance, 1 against a dead port | ✅ |
+| Every module the seed job needs imports from the tools tree alone | ✅ |
+| `docker build` | ❌ **not run** |
+| The composed stack starting | ❌ **not run** |
 
-The Dockerfiles are written against a service that demonstrably runs; they have
-not themselves been executed. Treat the build as unverified until it is.
+So: the image *contents* are proven sufficient and the entrypoint is proven to
+work from exactly those contents. What remains unproven is Docker's own
+execution of the build — layer caching, the `useradd` step, and whether
+`psycopg[binary]`'s wheel resolves on `linux/amd64` as it does on Windows.
+
+All of the above is reproducible:
+
+```powershell
+env\Scripts\python.exe scripts/verify_docker_image.py
+```
+
+To finish the verification on a machine with Docker:
+
+```bash
+docker build -f docker/Dockerfile -t text2sql-api .
+docker compose -f docker/docker-compose.yml config     # validates the merged config
+docker compose -f docker/docker-compose.yml up --build
+```
 
 ---
 
@@ -47,7 +81,7 @@ cp .env.example .env      # then fill it in
 docker compose -f docker/docker-compose.yml up --build
 
 # 3. The database starts with the schema applied but EMPTY.
-#    Generating ~250k rows takes minutes, so it is a deliberate step.
+#    Generating ~328k rows takes minutes, so it is a deliberate step.
 docker compose -f docker/docker-compose.yml --profile tools run --rm seed
 ```
 
