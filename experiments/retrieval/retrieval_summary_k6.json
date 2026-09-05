@@ -1,0 +1,26 @@
+{
+  "retriever": {
+    "retriever": "keyword_v1",
+    "method": "lexical identifier + comment + value matching, foreign-key shortest-path expansion",
+    "max_seed_tables": 6,
+    "relative_score_floor": 0.15,
+    "weights": {
+      "table_name": 3.0,
+      "column_name": 1.0,
+      "comment": 0.4,
+      "value": 2.5
+    },
+    "indexed_value_columns": 25,
+    "embeddings": false
+  },
+  "examples": 453,
+  "table_recall_pct": 86.33,
+  "complete_retrieval_pct": 84.33,
+  "incomplete_count": 71,
+  "mean_precision_pct": 60.18,
+  "mean_tables_retrieved": 3.21,
+  "total_tables": 12,
+  "mean_schema_chars": 1522.7,
+  "full_schema_chars": 5455,
+  "compression_pct": 27.9
+}

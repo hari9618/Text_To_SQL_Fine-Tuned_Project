@@ -1,0 +1,88 @@
+# Enterprise Text-to-SQL: database + API.
+#
+# Phase 13. Run from the PROJECT ROOT:
+#
+#     docker compose -f docker/docker-compose.yml up --build
+#
+# Credentials come from the git-ignored .env at the project root -- the same
+# file the local development setup uses. Nothing secret is written here, and
+# this file is safe to commit.
+#
+# The database starts with the schema applied but EMPTY. Generating the 250k
+# rows takes minutes and belongs in a deliberate step, not in every container
+# start:
+#
+#     docker compose -f docker/docker-compose.yml run --rm seed
+
+name: text2sql
+
+services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: ${APP_DB_USER:-texttosql_app}
+      POSTGRES_PASSWORD: ${APP_DB_PASSWORD:?set APP_DB_PASSWORD in .env}
+      POSTGRES_DB: ${PGDATABASE:-enterprise_sql}
+    volumes:
+      # Files in this directory run once, on first initialisation of an empty
+      # data volume. Re-running them on every start would fail on existing
+      # tables and mask real errors.
+      - ../database/schema.sql:/docker-entrypoint-initdb.d/10-schema.sql:ro
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      # The API waits for this. Without it the API starts first, fails to
+      # connect, and reports "degraded" until someone restarts it.
+      test: ["CMD-SHELL", "pg_isready -U ${APP_DB_USER:-texttosql_app} -d ${PGDATABASE:-enterprise_sql}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    # Not published to the host by default: the API reaches it over the
+    # compose network, and an exposed database is an exposed database.
+    expose:
+      - "5432"
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    environment:
+      PGHOST: db
+      PGPORT: "5432"
+      PGDATABASE: ${PGDATABASE:-enterprise_sql}
+      APP_DB_USER: ${APP_DB_USER:-texttosql_app}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?set APP_DB_PASSWORD in .env}
+      # hf  -> base Qwen3-8B, served remotely (10.82 % benchmark accuracy)
+      # local -> the fine-tuned adapter; needs a GPU image, see README
+      MODEL_BACKEND: ${MODEL_BACKEND:-hf}
+      HF_TOKEN: ${HF_TOKEN:-}
+      HF_PROVIDER: ${HF_PROVIDER:-featherless-ai}
+      SQL_STATEMENT_TIMEOUT_MS: ${SQL_STATEMENT_TIMEOUT_MS:-30000}
+      DB_POOL_MAX: ${DB_POOL_MAX:-4}
+    ports:
+      - "${API_PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # One-shot: fills the empty database. Not part of `up`.
+  seed:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.tools
+    environment:
+      PGHOST: db
+      PGPORT: "5432"
+      PGDATABASE: ${PGDATABASE:-enterprise_sql}
+      APP_DB_USER: ${APP_DB_USER:-texttosql_app}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?set APP_DB_PASSWORD in .env}
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["python", "scripts/generate_data.py"]
+    profiles: ["tools"]
+
+volumes:
+  pgdata:

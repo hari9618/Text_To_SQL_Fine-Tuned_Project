@@ -1,0 +1,712 @@
+{
+  "totals": {
+    "total_examples": 60,
+    "correct": 60,
+    "execution_accuracy_pct": 100.0,
+    "executable_sql": 60,
+    "executable_sql_pct": 100.0,
+    "wrong_result": 0,
+    "wrong_result_pct": 0.0
+  },
+  "projection_analysis": {
+    "note": "Many benchmark questions never say which columns to return (\"Show orders placed in 2023\"). The headline metric demands an exact column match, so SELECT * scores wrong even when the rows are identical. This splits those cases apart.",
+    "projection_mismatch_only": 0,
+    "projection_mismatch_only_pct": 0.0,
+    "genuinely_different_rows": 0,
+    "genuinely_different_rows_pct": 0.0,
+    "projection_tolerant_correct": 60,
+    "projection_tolerant_accuracy_pct": 100.0
+  },
+  "error_rates": {
+    "syntax_error_pct": 0.0,
+    "unknown_table_pct": 0.0,
+    "unknown_column_pct": 0.0,
+    "schema_hallucination_pct": 0.0,
+    "execution_error_pct": 0.0,
+    "timeout_pct": 0.0,
+    "no_sql_produced_pct": 0.0,
+    "invalid_sql_pct": 0.0,
+    "not_read_only_pct": 0.0,
+    "generation_failed_pct": 0.0
+  },
+  "strict_order_sensitive": {
+    "scope": 35,
+    "correct": 35,
+    "accuracy_pct": 100.0,
+    "note": "Subset whose gold query has ORDER BY, scored with row order respected. The headline metric ignores row order."
+  },
+  "latency": {
+    "generation_clean": {
+      "mean_ms": 0.0,
+      "median_ms": 0.0,
+      "p90_ms": 0.0,
+      "min_ms": 0.0,
+      "max_ms": 0.01
+    },
+    "throttled_calls": 0,
+    "generation": {
+      "mean_ms": 0.0,
+      "median_ms": 0.0,
+      "p90_ms": 0.0,
+      "min_ms": 0.0,
+      "max_ms": 0.01
+    },
+    "execution": {
+      "mean_ms": 69.82,
+      "median_ms": 30.27,
+      "p90_ms": 208.26,
+      "min_ms": 3.01,
+      "max_ms": 436.39
+    },
+    "total": {
+      "mean_ms": 69.82,
+      "median_ms": 30.27,
+      "p90_ms": 208.26,
+      "min_ms": 3.01,
+      "max_ms": 436.39
+    }
+  },
+  "tokens": {
+    "prompt_tokens_mean": null,
+    "completion_tokens_mean": null,
+    "prompt_tokens_total": null,
+    "completion_tokens_total": null
+  },
+  "retrieval": null,
+  "outcomes": {
+    "correct": 60
+  },
+  "by_difficulty": {
+    "easy": {
+      "total": 18,
+      "correct": 18,
+      "execution_accuracy_pct": 100.0,
+      "executable": 18,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 18
+      }
+    },
+    "enterprise": {
+      "total": 10,
+      "correct": 10,
+      "execution_accuracy_pct": 100.0,
+      "executable": 10,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 10
+      }
+    },
+    "hard": {
+      "total": 19,
+      "correct": 19,
+      "execution_accuracy_pct": 100.0,
+      "executable": 19,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 19
+      }
+    },
+    "medium": {
+      "total": 8,
+      "correct": 8,
+      "execution_accuracy_pct": 100.0,
+      "executable": 8,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 8
+      }
+    },
+    "very_hard": {
+      "total": 5,
+      "correct": 5,
+      "execution_accuracy_pct": 100.0,
+      "executable": 5,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 5
+      }
+    }
+  },
+  "by_domain": {
+    "catalogue": {
+      "total": 6,
+      "correct": 6,
+      "execution_accuracy_pct": 100.0,
+      "executable": 6,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 6
+      }
+    },
+    "finance": {
+      "total": 9,
+      "correct": 9,
+      "execution_accuracy_pct": 100.0,
+      "executable": 9,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 9
+      }
+    },
+    "logistics": {
+      "total": 22,
+      "correct": 22,
+      "execution_accuracy_pct": 100.0,
+      "executable": 22,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 22
+      }
+    },
+    "sales": {
+      "total": 23,
+      "correct": 23,
+      "execution_accuracy_pct": 100.0,
+      "executable": 23,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 23
+      }
+    }
+  },
+  "by_query_type": {
+    "avg": {
+      "total": 7,
+      "correct": 7,
+      "execution_accuracy_pct": 100.0,
+      "executable": 7,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 7
+      }
+    },
+    "business_rule": {
+      "total": 9,
+      "correct": 9,
+      "execution_accuracy_pct": 100.0,
+      "executable": 9,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 9
+      }
+    },
+    "churn": {
+      "total": 3,
+      "correct": 3,
+      "execution_accuracy_pct": 100.0,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 3
+      }
+    },
+    "count": {
+      "total": 8,
+      "correct": 8,
+      "execution_accuracy_pct": 100.0,
+      "executable": 8,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 8
+      }
+    },
+    "cross_domain": {
+      "total": 2,
+      "correct": 2,
+      "execution_accuracy_pct": 100.0,
+      "executable": 2,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 2
+      }
+    },
+    "date": {
+      "total": 15,
+      "correct": 15,
+      "execution_accuracy_pct": 100.0,
+      "executable": 15,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 15
+      }
+    },
+    "date_diff": {
+      "total": 2,
+      "correct": 2,
+      "execution_accuracy_pct": 100.0,
+      "executable": 2,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 2
+      }
+    },
+    "first_value": {
+      "total": 1,
+      "correct": 1,
+      "execution_accuracy_pct": 100.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 1
+      }
+    },
+    "group_by": {
+      "total": 22,
+      "correct": 22,
+      "execution_accuracy_pct": 100.0,
+      "executable": 22,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 22
+      }
+    },
+    "having": {
+      "total": 6,
+      "correct": 6,
+      "execution_accuracy_pct": 100.0,
+      "executable": 6,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 6
+      }
+    },
+    "join": {
+      "total": 6,
+      "correct": 6,
+      "execution_accuracy_pct": 100.0,
+      "executable": 6,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 6
+      }
+    },
+    "left_join": {
+      "total": 1,
+      "correct": 1,
+      "execution_accuracy_pct": 100.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 1
+      }
+    },
+    "limit": {
+      "total": 9,
+      "correct": 9,
+      "execution_accuracy_pct": 100.0,
+      "executable": 9,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 9
+      }
+    },
+    "multi_join": {
+      "total": 14,
+      "correct": 14,
+      "execution_accuracy_pct": 100.0,
+      "executable": 14,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 14
+      }
+    },
+    "nested_aggregation": {
+      "total": 1,
+      "correct": 1,
+      "execution_accuracy_pct": 100.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 1
+      }
+    },
+    "null_handling": {
+      "total": 5,
+      "correct": 5,
+      "execution_accuracy_pct": 100.0,
+      "executable": 5,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 5
+      }
+    },
+    "order_by": {
+      "total": 10,
+      "correct": 10,
+      "execution_accuracy_pct": 100.0,
+      "executable": 10,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 10
+      }
+    },
+    "partition": {
+      "total": 1,
+      "correct": 1,
+      "execution_accuracy_pct": 100.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 1
+      }
+    },
+    "row_number": {
+      "total": 1,
+      "correct": 1,
+      "execution_accuracy_pct": 100.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 1
+      }
+    },
+    "select": {
+      "total": 18,
+      "correct": 18,
+      "execution_accuracy_pct": 100.0,
+      "executable": 18,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 18
+      }
+    },
+    "subquery": {
+      "total": 1,
+      "correct": 1,
+      "execution_accuracy_pct": 100.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 1
+      }
+    },
+    "sum": {
+      "total": 9,
+      "correct": 9,
+      "execution_accuracy_pct": 100.0,
+      "executable": 9,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 9
+      }
+    },
+    "where": {
+      "total": 23,
+      "correct": 23,
+      "execution_accuracy_pct": 100.0,
+      "executable": 23,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 23
+      }
+    },
+    "window": {
+      "total": 2,
+      "correct": 2,
+      "execution_accuracy_pct": 100.0,
+      "executable": 2,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 2
+      }
+    }
+  },
+  "by_template": {
+    "e13": {
+      "total": 4,
+      "correct": 4,
+      "execution_accuracy_pct": 100.0,
+      "executable": 4,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 4
+      }
+    },
+    "e22": {
+      "total": 2,
+      "correct": 2,
+      "execution_accuracy_pct": 100.0,
+      "executable": 2,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 2
+      }
+    },
+    "e25": {
+      "total": 4,
+      "correct": 4,
+      "execution_accuracy_pct": 100.0,
+      "executable": 4,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 4
+      }
+    },
+    "e27": {
+      "total": 1,
+      "correct": 1,
+      "execution_accuracy_pct": 100.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 1
+      }
+    },
+    "e28": {
+      "total": 3,
+      "correct": 3,
+      "execution_accuracy_pct": 100.0,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 3
+      }
+    },
+    "e33": {
+      "total": 4,
+      "correct": 4,
+      "execution_accuracy_pct": 100.0,
+      "executable": 4,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 4
+      }
+    },
+    "h02": {
+      "total": 4,
+      "correct": 4,
+      "execution_accuracy_pct": 100.0,
+      "executable": 4,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 4
+      }
+    },
+    "h05": {
+      "total": 1,
+      "correct": 1,
+      "execution_accuracy_pct": 100.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 1
+      }
+    },
+    "h13": {
+      "total": 1,
+      "correct": 1,
+      "execution_accuracy_pct": 100.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 1
+      }
+    },
+    "h19": {
+      "total": 5,
+      "correct": 5,
+      "execution_accuracy_pct": 100.0,
+      "executable": 5,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 5
+      }
+    },
+    "h32": {
+      "total": 5,
+      "correct": 5,
+      "execution_accuracy_pct": 100.0,
+      "executable": 5,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 5
+      }
+    },
+    "h33": {
+      "total": 3,
+      "correct": 3,
+      "execution_accuracy_pct": 100.0,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 3
+      }
+    },
+    "m09": {
+      "total": 4,
+      "correct": 4,
+      "execution_accuracy_pct": 100.0,
+      "executable": 4,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 4
+      }
+    },
+    "m20": {
+      "total": 1,
+      "correct": 1,
+      "execution_accuracy_pct": 100.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 1
+      }
+    },
+    "m30": {
+      "total": 2,
+      "correct": 2,
+      "execution_accuracy_pct": 100.0,
+      "executable": 2,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 2
+      }
+    },
+    "m42": {
+      "total": 1,
+      "correct": 1,
+      "execution_accuracy_pct": 100.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 1
+      }
+    },
+    "v02": {
+      "total": 1,
+      "correct": 1,
+      "execution_accuracy_pct": 100.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 1
+      }
+    },
+    "v08": {
+      "total": 1,
+      "correct": 1,
+      "execution_accuracy_pct": 100.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 1
+      }
+    },
+    "v16": {
+      "total": 1,
+      "correct": 1,
+      "execution_accuracy_pct": 100.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 1
+      }
+    },
+    "v23": {
+      "total": 1,
+      "correct": 1,
+      "execution_accuracy_pct": 100.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 1
+      }
+    },
+    "v29": {
+      "total": 1,
+      "correct": 1,
+      "execution_accuracy_pct": 100.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 1
+      }
+    },
+    "x02": {
+      "total": 1,
+      "correct": 1,
+      "execution_accuracy_pct": 100.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 1
+      }
+    },
+    "x06": {
+      "total": 4,
+      "correct": 4,
+      "execution_accuracy_pct": 100.0,
+      "executable": 4,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 4
+      }
+    },
+    "x08": {
+      "total": 1,
+      "correct": 1,
+      "execution_accuracy_pct": 100.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 1
+      }
+    },
+    "x14": {
+      "total": 3,
+      "correct": 3,
+      "execution_accuracy_pct": 100.0,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 3
+      }
+    },
+    "x15": {
+      "total": 1,
+      "correct": 1,
+      "execution_accuracy_pct": 100.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 1
+      }
+    }
+  },
+  "run_metadata": {
+    "model": {
+      "kind": "oracle",
+      "model_id": "oracle/gold-sql",
+      "fine_tuned": false,
+      "note": "harness self-test; returns gold SQL"
+    },
+    "prompt": {
+      "version": "v1",
+      "fingerprint": "8288e41a496531a9"
+    },
+    "schema_context": {
+      "mode": "full_schema_no_retrieval",
+      "fingerprint": "d03619e711661bc5",
+      "characters": 5455,
+      "note": "Phase 4 is ablation configuration 1: the base model sees the entire schema. Phase 6 replaces this with a retrieved subset."
+    },
+    "dataset": {
+      "path": "C:/Users/dell/Desktop/Enterprice-text to -SQL/dataset/test/test.jsonl",
+      "fingerprint": "ec7ddcae4f9d90d4"
+    },
+    "database": {
+      "postgres_version": "PostgreSQL 18.1 on x86_64-windows",
+      "data_fingerprint": "5a018e291c3df4ad",
+      "row_counts": "categories=120;customers=12000;departments=12;employees=500;inventory=6266;order_items=154069;orders=55000;payments=57088;products=2500;shipments=40850;suppliers=250;warehouses=15",
+      "data_as_of": "2026-08-01T00:00:00+00:00",
+      "data_as_of_sql": "TIMESTAMPTZ '2026-08-01 00:00:00+00:00'"
+    },
+    "evaluation": {
+      "method": "execution_based",
+      "comparison": "order-insensitive result fingerprint",
+      "strict_comparison": "order-sensitive, gold queries with ORDER BY only",
+      "sql_string_comparison": false
+    }
+  }
+}

@@ -1,0 +1,37 @@
+# Keep the build context small and secrets out of it.
+
+# Secrets. Credentials reach the container through environment variables,
+# never baked into an image layer where `docker history` would expose them.
+.env
+*.env
+!.env.example
+
+# Model weights: 174 MB the API does not need. The remote backend calls a
+# served model; the local backend mounts the adapter at runtime.
+models/
+*.safetensors
+*.bin
+*.gguf
+*.pt
+
+# Generated data and experiment output: large, reproducible, not runtime input.
+experiments/
+data/
+dataset/generated/
+outputs/
+
+# Development-only
+env/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.git/
+.gitignore
+training/
+notebooks/
+*.ipynb
+*.zip
+*.log
+.vscode/
+.idea/

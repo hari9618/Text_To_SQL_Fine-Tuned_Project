@@ -1,0 +1,29 @@
+{
+  "phase": 10,
+  "purpose": "inputs for remote generation; scoring happens locally",
+  "prompt": {
+    "version": "v1",
+    "fingerprint": "8288e41a496531a9"
+  },
+  "schema": {
+    "mode": "full",
+    "fingerprint": "d03619e711661bc5",
+    "full_schema_fingerprint": "d03619e711661bc5",
+    "characters": 5455,
+    "retrieval": null
+  },
+  "ablation_configuration": 3,
+  "questions": {
+    "count": 453,
+    "fingerprint": "c54633015ac324d6",
+    "source": "dataset/test/test.jsonl",
+    "source_fingerprint": "ec7ddcae4f9d90d4",
+    "gold_sql_included": false
+  },
+  "baseline_to_beat": {
+    "strict_execution_accuracy_pct": 10.82,
+    "projection_tolerant_accuracy_pct": 45.92,
+    "executable_sql_pct": 98.9,
+    "schema_hallucination_pct": 0.66
+  }
+}

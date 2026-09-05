@@ -1,0 +1,1306 @@
+{
+  "phase": 3,
+  "random_seed": 20260808,
+  "data_as_of": "2026-08-01T00:00:00+00:00",
+  "data_as_of_sql": "TIMESTAMPTZ '2026-08-01 00:00:00+00:00'",
+  "time_anchored_examples": 78,
+  "examples_still_using_now": 0,
+  "statement_timeout_ms": 30000,
+  "split_ratios": {
+    "train": 0.7,
+    "validation": 0.15,
+    "test": 0.15
+  },
+  "template_validators_passed": true,
+  "totals": {
+    "total_examples": 3045,
+    "valid_examples": 3045,
+    "invalid_examples": 0,
+    "validation_rate_pct": 100.0,
+    "unique_sql_executed": 1015,
+    "execution_failures_unique_sql": 0,
+    "duplicate_question_texts": 0,
+    "conflicting_questions": 0,
+    "result_set_collisions": 4,
+    "leakage_detected": false
+  },
+  "rejections_by_reason": {},
+  "leakage_checks": {
+    "templates_in_multiple_splits": 0,
+    "questions_in_multiple_splits": 0,
+    "sql_in_multiple_splits": 0,
+    "groups_in_multiple_splits": 0
+  },
+  "valid_by_difficulty": {
+    "hard": 963,
+    "easy": 852,
+    "enterprise": 567,
+    "medium": 426,
+    "very_hard": 237
+  },
+  "valid_by_domain": {
+    "sales": 1326,
+    "catalogue": 672,
+    "cross_domain": 375,
+    "logistics": 249,
+    "hr": 243,
+    "finance": 180
+  },
+  "splits": {
+    "train": {
+      "examples": 2133,
+      "templates": 74,
+      "by_difficulty": {
+        "hard": 675,
+        "easy": 597,
+        "enterprise": 396,
+        "medium": 300,
+        "very_hard": 165
+      }
+    },
+    "validation": {
+      "examples": 459,
+      "templates": 52,
+      "by_difficulty": {
+        "hard": 144,
+        "easy": 129,
+        "enterprise": 87,
+        "medium": 63,
+        "very_hard": 36
+      }
+    },
+    "test": {
+      "examples": 453,
+      "templates": 48,
+      "by_difficulty": {
+        "hard": 144,
+        "easy": 126,
+        "enterprise": 84,
+        "medium": 63,
+        "very_hard": 36
+      }
+    }
+  },
+  "merged_template_groups": [],
+  "conflicting_question_details": [],
+  "by_template": {
+    "e01": {
+      "generated": 36,
+      "valid": 36,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "e02": {
+      "generated": 75,
+      "valid": 75,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "e03": {
+      "generated": 6,
+      "valid": 6,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "e04": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "e05": {
+      "generated": 33,
+      "valid": 33,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "e06": {
+      "generated": 27,
+      "valid": 27,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "e07": {
+      "generated": 27,
+      "valid": 27,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "e08": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "e09": {
+      "generated": 33,
+      "valid": 33,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "e10": {
+      "generated": 33,
+      "valid": 33,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "e11": {
+      "generated": 27,
+      "valid": 27,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "e12": {
+      "generated": 18,
+      "valid": 18,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "e13": {
+      "generated": 24,
+      "valid": 24,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "e14": {
+      "generated": 27,
+      "valid": 27,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "e15": {
+      "generated": 33,
+      "valid": 33,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "e16": {
+      "generated": 39,
+      "valid": 39,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "e17": {
+      "generated": 33,
+      "valid": 33,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "e18": {
+      "generated": 27,
+      "valid": 27,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "e19": {
+      "generated": 36,
+      "valid": 36,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "e20": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "e21": {
+      "generated": 18,
+      "valid": 18,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "e22": {
+      "generated": 15,
+      "valid": 15,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "e23": {
+      "generated": 12,
+      "valid": 12,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "e24": {
+      "generated": 21,
+      "valid": 21,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "e25": {
+      "generated": 27,
+      "valid": 27,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "e26": {
+      "generated": 24,
+      "valid": 24,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "e27": {
+      "generated": 9,
+      "valid": 9,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "e28": {
+      "generated": 24,
+      "valid": 24,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "e29": {
+      "generated": 48,
+      "valid": 48,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "e30": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "e31": {
+      "generated": 27,
+      "valid": 27,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "e32": {
+      "generated": 27,
+      "valid": 27,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "e33": {
+      "generated": 27,
+      "valid": 27,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "e34": {
+      "generated": 27,
+      "valid": 27,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "h01": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "h02": {
+      "generated": 33,
+      "valid": 33,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "h03": {
+      "generated": 120,
+      "valid": 120,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "h04": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "h05": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "h06": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "h07": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "h08": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "h09": {
+      "generated": 111,
+      "valid": 111,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "h10": {
+      "generated": 33,
+      "valid": 33,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "h11": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "h12": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "h13": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "h14": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "h15": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "h16": {
+      "generated": 33,
+      "valid": 33,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "h17": {
+      "generated": 288,
+      "valid": 288,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "h18": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "h19": {
+      "generated": 33,
+      "valid": 33,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "h20": {
+      "generated": 9,
+      "valid": 9,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "h21": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "h22": {
+      "generated": 33,
+      "valid": 33,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "h23": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "h24": {
+      "generated": 36,
+      "valid": 36,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "h25": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "h26": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "h27": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "h28": {
+      "generated": 27,
+      "valid": 27,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "h29": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "h30": {
+      "generated": 36,
+      "valid": 36,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "h31": {
+      "generated": 18,
+      "valid": 18,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "h32": {
+      "generated": 33,
+      "valid": 33,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "h33": {
+      "generated": 27,
+      "valid": 27,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "h34": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "h35": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "h36": {
+      "generated": 33,
+      "valid": 33,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "m01": {
+      "generated": 36,
+      "valid": 36,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "m02": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "m03": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "m04": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "m05": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "m06": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "m07": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "m08": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "m09": {
+      "generated": 24,
+      "valid": 24,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "m10": {
+      "generated": 30,
+      "valid": 30,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "m11": {
+      "generated": 27,
+      "valid": 27,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "m12": {
+      "generated": 39,
+      "valid": 39,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "m13": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "m14": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "m15": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "m16": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "m17": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "m18": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "m19": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "m20": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "m21": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "m22": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "m23": {
+      "generated": 27,
+      "valid": 27,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "m24": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "m25": {
+      "generated": 24,
+      "valid": 24,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "m26": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "m27": {
+      "generated": 24,
+      "valid": 24,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "m28": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "m29": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "m30": {
+      "generated": 15,
+      "valid": 15,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "m31": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "m32": {
+      "generated": 27,
+      "valid": 27,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "m33": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "m34": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "m35": {
+      "generated": 27,
+      "valid": 27,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "m36": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "m37": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "m38": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "m39": {
+      "generated": 15,
+      "valid": 15,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "m40": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "m41": {
+      "generated": 24,
+      "valid": 24,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "m42": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "v01": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "v02": {
+      "generated": 12,
+      "valid": 12,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "v03": {
+      "generated": 24,
+      "valid": 24,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "v04": {
+      "generated": 24,
+      "valid": 24,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "v05": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "v06": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "v07": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "v08": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "v09": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "v10": {
+      "generated": 60,
+      "valid": 60,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "v11": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "v12": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "v13": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "v14": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "v15": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "v16": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "v17": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "v18": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "v19": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "v20": {
+      "generated": 12,
+      "valid": 12,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "v21": {
+      "generated": 24,
+      "valid": 24,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "v22": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "v23": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "v24": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "v25": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "v26": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "v27": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "v28": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "v29": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "v30": {
+      "generated": 12,
+      "valid": 12,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "x01": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "x02": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "x03": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "x04": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "x05": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "x06": {
+      "generated": 27,
+      "valid": 27,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "x07": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "x08": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "x09": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "x10": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "x11": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "x12": {
+      "generated": 360,
+      "valid": 360,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "x13": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "x14": {
+      "generated": 24,
+      "valid": 24,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "x15": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "x16": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "x17": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "x18": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "x19": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "x20": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "x21": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "x22": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "x23": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "x24": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "x25": {
+      "generated": 27,
+      "valid": 27,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "x26": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "x27": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "x28": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "x29": {
+      "generated": 27,
+      "valid": 27,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    },
+    "x30": {
+      "generated": 24,
+      "valid": 24,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "train"
+    },
+    "x31": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "test"
+    },
+    "x32": {
+      "generated": 3,
+      "valid": 3,
+      "rejected": 0,
+      "rejection_reasons": {},
+      "split": "validation"
+    }
+  }
+}

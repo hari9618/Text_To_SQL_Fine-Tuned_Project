@@ -1,0 +1,23 @@
+# Colab only. Do NOT install locally: the dev laptop has 8 GB RAM and no CUDA.
+#
+# Deliberately NOT hard-pinned. Colab's base image moves fast -- as of
+# 2026-08 it ships Python 3.13 / torch 2.11 / CUDA 12.8 -- and pinning to
+# older releases breaks in ways that are painful to debug:
+#
+#   bitsandbytes<=0.45  imports `triton.ops`, removed in Triton 3.0, and has
+#                       no prebuilt binary for CUDA 12.8. Fails at model load
+#                       with ModuleNotFoundError: No module named 'triton.ops'
+#
+# Reproducibility is preserved a different way: train_qlora.py records the
+# exact resolved versions into training_config.json at run time. Pin loosely,
+# record precisely.
+#
+# torch is intentionally absent -- Colab's preinstalled CUDA build is reused.
+
+bitsandbytes>=0.47          # 4-bit NF4 + paged 8-bit AdamW, modern CUDA/Triton
+transformers>=4.51          # Qwen3 architecture support
+peft>=0.14                  # LoRA adapters
+accelerate>=1.2
+datasets>=3.2
+trl>=0.13
+sentencepiece>=0.2

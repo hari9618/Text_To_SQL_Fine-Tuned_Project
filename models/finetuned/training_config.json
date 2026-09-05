@@ -1,0 +1,82 @@
+{
+  "config": {
+    "model_id": "Qwen/Qwen3-8B",
+    "model_revision": "b968826d9c46",
+    "train_file": "/kaggle/input/datasets/thotahari/text2sql-sft/train.jsonl",
+    "val_file": "/kaggle/input/datasets/thotahari/text2sql-sft/validation.jsonl",
+    "output_dir": "/kaggle/working/qwen3-8b-text2sql-qlora",
+    "max_seq_len": 2048,
+    "num_epochs": 1.0,
+    "per_device_batch_size": 1,
+    "gradient_accumulation_steps": 8,
+    "learning_rate": 0.0002,
+    "warmup_ratio": 0.03,
+    "weight_decay": 0.0,
+    "lr_scheduler": "cosine",
+    "max_grad_norm": 0.3,
+    "seed": 20260808,
+    "lora_r": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.05,
+    "lora_target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "load_in_4bit": true,
+    "bnb_4bit_quant_type": "nf4",
+    "bnb_4bit_use_double_quant": true,
+    "save_steps": 50,
+    "eval_steps": 50,
+    "logging_steps": 5,
+    "save_total_limit": 3,
+    "train_on_completion_only": true,
+    "gradient_checkpointing": true
+  },
+  "gpu": {
+    "name": "Tesla T4",
+    "total_vram_gb": 14.56,
+    "compute_capability": "7.5",
+    "supports_bf16": false,
+    "supports_flash_attn2": false,
+    "torch": "2.10.0+cu128",
+    "cuda": "12.8"
+  },
+  "compute_dtype": "torch.float16",
+  "attn_implementation": "sdpa",
+  "dataset_stats": {
+    "train": {
+      "examples": 2133,
+      "truncated": 0,
+      "mean_prompt_tokens": 1489.8,
+      "mean_completion_tokens": 46.2,
+      "max_total_tokens": 1620,
+      "supervised_token_share_pct": 3.01
+    },
+    "validation": {
+      "examples": 459,
+      "truncated": 0,
+      "mean_prompt_tokens": 1489.4,
+      "mean_completion_tokens": 43.8,
+      "max_total_tokens": 1586,
+      "supervised_token_share_pct": 2.86
+    }
+  },
+  "trainable_params": 43646976,
+  "total_params": 4761498624,
+  "smoke_run": false,
+  "package_versions": {
+    "torch": "2.10.0+cu128",
+    "transformers": "5.16.1",
+    "peft": "0.20.0",
+    "bitsandbytes": "0.50.2",
+    "accelerate": "1.14.0",
+    "datasets": "5.0.1",
+    "trl": "1.12.0",
+    "tokenizers": "0.23.1"
+  }
+}

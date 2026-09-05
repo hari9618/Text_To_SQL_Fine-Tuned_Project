@@ -1,0 +1,441 @@
+{
+  "totals": {
+    "total_examples": 8,
+    "correct": 0,
+    "execution_accuracy_pct": 0.0,
+    "executable_sql": 8,
+    "executable_sql_pct": 100.0,
+    "wrong_result": 8,
+    "wrong_result_pct": 100.0
+  },
+  "projection_analysis": {
+    "note": "Many benchmark questions never say which columns to return (\"Show orders placed in 2023\"). The headline metric demands an exact column match, so SELECT * scores wrong even when the rows are identical. This splits those cases apart.",
+    "projection_mismatch_only": 4,
+    "projection_mismatch_only_pct": 50.0,
+    "genuinely_different_rows": 4,
+    "genuinely_different_rows_pct": 50.0,
+    "projection_tolerant_correct": 4,
+    "projection_tolerant_accuracy_pct": 50.0
+  },
+  "error_rates": {
+    "syntax_error_pct": 0.0,
+    "unknown_table_pct": 0.0,
+    "unknown_column_pct": 0.0,
+    "schema_hallucination_pct": 0.0,
+    "execution_error_pct": 0.0,
+    "timeout_pct": 0.0,
+    "no_sql_produced_pct": 0.0,
+    "invalid_sql_pct": 0.0,
+    "not_read_only_pct": 0.0,
+    "generation_failed_pct": 0.0
+  },
+  "strict_order_sensitive": {
+    "scope": 5,
+    "correct": 0,
+    "accuracy_pct": 0.0,
+    "note": "Subset whose gold query has ORDER BY, scored with row order respected. The headline metric ignores row order."
+  },
+  "latency": {
+    "generation": {
+      "mean_ms": 1640.8,
+      "median_ms": 1428.22,
+      "p90_ms": 2967.28,
+      "min_ms": 862.63,
+      "max_ms": 2967.28
+    },
+    "execution": {
+      "mean_ms": 100.29,
+      "median_ms": 31.81,
+      "p90_ms": 471.48,
+      "min_ms": 2.45,
+      "max_ms": 471.48
+    },
+    "total": {
+      "mean_ms": 1741.09,
+      "median_ms": 1433.5,
+      "p90_ms": 3022.79,
+      "min_ms": 870.75,
+      "max_ms": 3022.79
+    }
+  },
+  "tokens": {
+    "prompt_tokens_mean": 1484.9,
+    "completion_tokens_mean": 62.1,
+    "prompt_tokens_total": 11879,
+    "completion_tokens_total": 497
+  },
+  "outcomes": {
+    "wrong_result": 8
+  },
+  "by_difficulty": {
+    "easy": {
+      "total": 3,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 3
+      }
+    },
+    "enterprise": {
+      "total": 1,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 1
+      }
+    },
+    "hard": {
+      "total": 2,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 2,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 2
+      }
+    },
+    "medium": {
+      "total": 1,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 1
+      }
+    },
+    "very_hard": {
+      "total": 1,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 1
+      }
+    }
+  },
+  "by_domain": {
+    "catalogue": {
+      "total": 2,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 2,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 2
+      }
+    },
+    "finance": {
+      "total": 1,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 1
+      }
+    },
+    "logistics": {
+      "total": 3,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 3
+      }
+    },
+    "sales": {
+      "total": 2,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 2,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 2
+      }
+    }
+  },
+  "by_query_type": {
+    "business_rule": {
+      "total": 1,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 1
+      }
+    },
+    "count": {
+      "total": 2,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 2,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 2
+      }
+    },
+    "cross_domain": {
+      "total": 1,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 1
+      }
+    },
+    "date": {
+      "total": 2,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 2,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 2
+      }
+    },
+    "group_by": {
+      "total": 3,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 3
+      }
+    },
+    "join": {
+      "total": 2,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 2,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 2
+      }
+    },
+    "limit": {
+      "total": 1,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 1
+      }
+    },
+    "multi_join": {
+      "total": 1,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 1
+      }
+    },
+    "order_by": {
+      "total": 2,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 2,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 2
+      }
+    },
+    "partition": {
+      "total": 1,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 1
+      }
+    },
+    "row_number": {
+      "total": 1,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 1
+      }
+    },
+    "select": {
+      "total": 3,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 3
+      }
+    },
+    "sum": {
+      "total": 1,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 1
+      }
+    },
+    "where": {
+      "total": 3,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 3
+      }
+    },
+    "window": {
+      "total": 1,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 1
+      }
+    }
+  },
+  "by_template": {
+    "e13": {
+      "total": 1,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 1
+      }
+    },
+    "e25": {
+      "total": 1,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 1
+      }
+    },
+    "e33": {
+      "total": 1,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 1
+      }
+    },
+    "h05": {
+      "total": 1,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 1
+      }
+    },
+    "h32": {
+      "total": 1,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 1
+      }
+    },
+    "m09": {
+      "total": 1,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 1
+      }
+    },
+    "v02": {
+      "total": 1,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 1
+      }
+    },
+    "x08": {
+      "total": 1,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 1,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 1
+      }
+    }
+  },
+  "run_metadata": {
+    "model": {
+      "kind": "hf_inference_providers",
+      "model_id": "Qwen/Qwen3-8B",
+      "model_revision": "b968826d9c46dd6066d109eabc6255188de91218",
+      "provider": "auto",
+      "fine_tuned": false,
+      "adapters": [],
+      "inference_params": {
+        "temperature": 0.0,
+        "top_p": 1.0,
+        "max_tokens": 512,
+        "seed": 20260808
+      }
+    },
+    "prompt": {
+      "version": "v1",
+      "fingerprint": "8288e41a496531a9"
+    },
+    "schema_context": {
+      "mode": "full_schema_no_retrieval",
+      "fingerprint": "d03619e711661bc5",
+      "characters": 5455,
+      "note": "Phase 4 is ablation configuration 1: the base model sees the entire schema. Phase 6 replaces this with a retrieved subset."
+    },
+    "dataset": {
+      "path": "C:/Users/dell/Desktop/Enterprice-text to -SQL/dataset/test/test.jsonl",
+      "fingerprint": "ec7ddcae4f9d90d4"
+    },
+    "database": {
+      "postgres_version": "PostgreSQL 18.1 on x86_64-windows",
+      "data_fingerprint": "5a018e291c3df4ad",
+      "row_counts": "categories=120;customers=12000;departments=12;employees=500;inventory=6266;order_items=154069;orders=55000;payments=57088;products=2500;shipments=40850;suppliers=250;warehouses=15",
+      "data_as_of": "2026-08-01T00:00:00+00:00",
+      "data_as_of_sql": "TIMESTAMPTZ '2026-08-01 00:00:00+00:00'"
+    },
+    "evaluation": {
+      "method": "execution_based",
+      "comparison": "order-insensitive result fingerprint",
+      "strict_comparison": "order-sensitive, gold queries with ORDER BY only",
+      "sql_string_comparison": false
+    }
+  }
+}

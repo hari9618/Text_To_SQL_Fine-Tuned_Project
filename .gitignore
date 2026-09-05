@@ -1,0 +1,96 @@
+# ---------------------------------------------------------------
+# Python
+# ---------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# ---------------------------------------------------------------
+# Virtual environments
+# (never commit the venv - it is machine-specific and huge)
+# ---------------------------------------------------------------
+env/
+venv/
+.venv/
+ENV/
+
+# ---------------------------------------------------------------
+# Secrets and local configuration
+# Database credentials and API keys live here - NEVER commit them.
+# Commit .env.example instead (placeholder values only).
+# ---------------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets.yaml
+
+# ---------------------------------------------------------------
+# Model weights and adapters
+# These are large binaries. They belong on the Hugging Face Hub or
+# cloud storage, not in Git.
+# ---------------------------------------------------------------
+models/**/*.bin
+models/**/*.safetensors
+models/**/*.gguf
+models/**/*.pt
+models/**/*.pth
+*.ckpt
+checkpoints/
+adapters/
+.cache/
+huggingface/
+
+# ---------------------------------------------------------------
+# Data
+# Raw dumps and generated data are reproducible from scripts.
+# Curated dataset splits (train/validation/test) ARE committed so
+# experiments stay reproducible - see data/README.md when created.
+# ---------------------------------------------------------------
+data/raw/
+data/processed/
+*.db
+*.sqlite
+*.sqlite3
+*.dump
+
+# ---------------------------------------------------------------
+# Experiment tracking / logs
+# ---------------------------------------------------------------
+logs/
+*.log
+runs/
+wandb/
+mlruns/
+outputs/
+
+# ---------------------------------------------------------------
+# Notebooks
+# ---------------------------------------------------------------
+.ipynb_checkpoints/
+
+# ---------------------------------------------------------------
+# Editors / OS
+# ---------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---------------------------------------------------------------
+# Testing / tooling caches
+# ---------------------------------------------------------------
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/

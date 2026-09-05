@@ -1,0 +1,25 @@
+# Dependencies are added phase by phase, not up front.
+# The development laptop has 8 GB RAM and no NVIDIA GPU — heavy packages
+# (torch, transformers, peft, bitsandbytes) arrive only when their phase does.
+
+# --- Phase 1: database foundation ---
+psycopg[binary]==3.2.3      # PostgreSQL driver (v3). [binary] ships prebuilt
+                            # wheels, so no local C compiler is needed.
+python-dotenv==1.0.1        # loads .env so credentials stay out of source
+pytest==8.3.4               # database integrity tests (Task 1.5)
+
+# --- Phase 3: dataset validation ---
+sqlglot==25.34.1            # SQL parsing: statement classification and table
+                            # extraction. Pure Python, no build step.
+
+# --- Phase 4: model inference over the network ---
+huggingface-hub==0.36.2     # Inference Providers client. No torch: the model is
+                            # served remotely, never loaded on this machine.
+
+# --- Phase 12: API service ---
+fastapi==0.115.6            # request/response validation comes from the type
+                            # hints, so the OpenAPI schema cannot drift
+uvicorn[standard]==0.34.0   # ASGI server
+psycopg-pool==3.2.4         # connection pool; every connection is configured
+                            # read-only with a statement timeout on checkout
+httpx==0.28.1               # required by fastapi.testclient
