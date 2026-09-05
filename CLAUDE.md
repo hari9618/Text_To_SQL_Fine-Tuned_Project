@@ -88,12 +88,24 @@ Work strictly in order. **Do not implement future phases prematurely.**
 | 8      | Understand and implement LoRA / QLoRA             | **complete** |
 | 9      | Fine-tune on cloud GPU                            | **complete** |
 | 10     | Evaluate fine-tuned model                         | **complete** |
-| 11     | SQL error detection and repair                    | built, awaiting run |
+| 11     | SQL error detection and repair                    | built, GPU run pending |
 | 12     | Production-style API                              | **complete** |
 | 13     | Docker / deployment                               | **complete** (build unrun) |
-| 14     | Final benchmark, ablation study, documentation    | in progress |
+| 14     | Final benchmark, ablation study, documentation    | **complete** (3/5 configs) |
 
 Update this table as phases complete.
+
+**Two measurements remain, both hard-blocked on GPU access** (no local CUDA;
+HF Jobs needs a Pro account and this one is `is_pro: false`). Everything for
+them is built, verified and staged:
+
+| config | upload | notebook | output | then |
+| --- | --- | --- | --- | --- |
+| 4 fine-tuned + retrieval | `text2sql-evalpack-retrieved.zip` | `kaggle_generate_finetuned.ipynb` | `predictions_retrieved.jsonl` | `scripts/score_finetuned.py` |
+| 5 fine-tuned + repair | `text2sql-repairpack.zip` | `kaggle_repair_finetuned.ipynb` | `repairs.jsonl` | `scripts/score_repair.py` |
+
+Then `scripts/ablation_report.py` regenerates `experiments/ABLATION.md` with
+all five rows.
 
 ---
 
