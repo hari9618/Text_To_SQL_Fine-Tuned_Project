@@ -22,7 +22,7 @@ A LoRA adapter that turns **Qwen3-8B** into a PostgreSQL text-to-SQL model for a
 
 **Strict execution accuracy went from 10.82 % to 50.99 %** on 453 held-out
 questions — same prompt, same schema, same database, same executor. Only the
-weights changed.
+weights changed. With a one-shot self-correction loop on top, **52.10 %**.
 
 The evaluation is execution-based: every prediction is run against a real
 PostgreSQL database and its result set compared to the gold query's. No string
@@ -204,13 +204,40 @@ Order is compared only where the gold query has an `ORDER BY`.
 
 ### Ablation — 453 held-out questions
 
-| metric | base model | **+ this adapter** | base + retrieval | adapter + retrieval |
-|---|---:|---:|---:|---:|
-| **strict execution accuracy** | 10.82 % | **50.99 %** | 9.27 % | 41.72 % |
-| projection-tolerant accuracy | 45.92 % | 50.99 % | 43.93 % | 41.72 % |
-| executable SQL | 98.90 % | 95.81 % | 92.27 % | 94.92 % |
-| schema hallucination | 0.66 % | 1.99 % | 3.31 % | 3.53 % |
-| syntax errors | 0.00 % | 0.22 % | 0.00 % | 0.00 % |
+| metric | base | + retrieval | **this adapter** | adapter + retrieval | **adapter + repair** |
+|---|---:|---:|---:|---:|---:|
+| **strict execution accuracy** | 10.82 % | 9.27 % | **50.99 %** | 41.72 % | **52.10 %** |
+| projection-tolerant accuracy | 45.92 % | 43.93 % | 50.99 % | 41.72 % | **52.10 %** |
+| executable SQL | 98.90 % | 92.27 % | 95.81 % | 94.92 % | **98.23 %** |
+| schema hallucination | 0.66 % | 3.31 % | 1.99 % | 3.53 % | **0.66 %** |
+| syntax errors | 0.00 % | 0.00 % | 0.22 % | 0.00 % | 0.22 % |
+
+All five configurations measured on the same 453 held-out questions.
+
+### Self-correction recovers what fine-tuning broke
+
+Feeding the database's own error back and retrying **once** returns executable
+SQL and hallucination to the *base model's* level while keeping the accuracy
+gain — 95.81 % → 98.23 % executable, 1.99 % → 0.66 % hallucination.
+
+Repair fires only on **detectable** failures: SQL that fails to validate or
+fails to execute. A query that runs and returns the wrong rows is
+indistinguishable from a correct one without a gold answer, so it is left alone.
+
+| | | |
+|---|---:|---|
+| repair **success** — now executes | 11 / 19 | 57.9 % |
+| repair **correctness** — returns the gold rows | 5 / 19 | 26.3 % |
+| returned identical SQL | 4 / 19 | |
+
+**Six of the eleven "successes" turned a crash into a confident wrong answer.**
+Reporting one rate would have claimed 57.9 % and hidden that.
+
+Repair works when the error *names the fix* and fails when it names only the
+*symptom*. Every correct repair was `column "method" does not exist` — the
+schema shows `payment_method`, and the model renames it. The failures were
+`datediff does not exist` and `column reference is ambiguous`: both state a
+symptom without implying the correction.
 
 ### By difficulty
 
@@ -300,8 +327,8 @@ Stated plainly, because they bound what the numbers mean.
 - **Schema-specific.** Trained on one 12-table schema. It has learned *this*
   database's conventions — that is most of the measured gain — so accuracy on a
   different schema will be far lower.
-- **Half its answers are still wrong.** 50.99 % is a large improvement over
-  10.82 %; it is not production-grade unaided.
+- **Half its answers are still wrong.** 50.99 % alone, 52.10 % with repair, is a
+  large improvement over 10.82 %; it is not production-grade unaided.
 - **It broke things too.** Executable SQL fell 3.09 pp and schema hallucination
   rose 1.33 pp: 19 queries fail where 5 did before. A final training loss of
   0.006 against an eval loss of 0.335 means it fit 2,133 examples hard, and a
@@ -314,9 +341,10 @@ Stated plainly, because they bound what the numbers mean.
   training. Real user phrasing — abbreviations, typos, ambiguity — is untested.
   This is the biggest caveat on the headline number.
 - **One epoch, one seed, one run.** No variance estimate.
-- **Silent wrong answers are the real risk.** SQL that runs and returns the
-  wrong rows is indistinguishable from a correct answer without a gold
-  reference. Never put this in front of users without showing them the SQL.
+- **Silent wrong answers are the real risk**, and repair cannot help with them:
+  a query that runs and returns the wrong rows raises no error to feed back.
+  Repair itself creates six more of them out of nineteen attempts. Never put
+  this in front of users without showing them the SQL.
 
 ## Intended use
 

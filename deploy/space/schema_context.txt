@@ -1,0 +1,148 @@
+CREATE TABLE categories (
+  category_id INTEGER NOT NULL PRIMARY KEY,
+  category_name VARCHAR(100) NOT NULL,
+  parent_category_id INTEGER  -- Parent category, NULL for top-level categories. Self-referencing hierarchy.,
+  description TEXT,
+  created_at TIMESTAMPTZ NOT NULL
+);
+
+CREATE TABLE customers (
+  customer_id INTEGER NOT NULL PRIMARY KEY,
+  customer_name VARCHAR(200) NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  phone VARCHAR(40),
+  country VARCHAR(100) NOT NULL,
+  city VARCHAR(100),
+  customer_segment VARCHAR(20) NOT NULL  -- Either individual or business. Business customers may have a credit_limit.,
+  credit_limit NUMERIC(12,2)  -- Maximum outstanding balance allowed. NULL for individual customers.,
+  signup_date DATE NOT NULL,
+  is_active BOOLEAN NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL
+);
+
+CREATE TABLE departments (
+  department_id INTEGER NOT NULL PRIMARY KEY,
+  department_name VARCHAR(100) NOT NULL,
+  location VARCHAR(150),
+  annual_budget NUMERIC(14,2),
+  created_at TIMESTAMPTZ NOT NULL
+);
+
+CREATE TABLE employees (
+  employee_id INTEGER NOT NULL PRIMARY KEY,
+  first_name VARCHAR(100) NOT NULL,
+  last_name VARCHAR(100) NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  phone VARCHAR(40),
+  hire_date DATE NOT NULL,
+  job_title VARCHAR(120) NOT NULL,
+  salary NUMERIC(12,2) NOT NULL,
+  department_id INTEGER NOT NULL,
+  manager_id INTEGER  -- This employee's manager, NULL for the top of the org chart.,
+  is_active BOOLEAN NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL
+);
+
+CREATE TABLE inventory (
+  inventory_id INTEGER NOT NULL PRIMARY KEY,
+  product_id INTEGER NOT NULL,
+  warehouse_id INTEGER NOT NULL,
+  quantity_on_hand INTEGER NOT NULL,
+  reorder_level INTEGER NOT NULL  -- Stock threshold below which the product should be reordered.,
+  last_restocked_at TIMESTAMPTZ
+);
+
+CREATE TABLE order_items (
+  order_item_id INTEGER NOT NULL PRIMARY KEY,
+  order_id INTEGER NOT NULL,
+  product_id INTEGER NOT NULL,
+  quantity INTEGER NOT NULL,
+  unit_price NUMERIC(12,2) NOT NULL  -- Price charged at the time of sale, not the product's current list price.,
+  discount_pct NUMERIC(5,2) NOT NULL  -- Percentage discount, 0-100. Line revenue is quantity * unit_price * (1 - discount_pct / 100).
+);
+
+CREATE TABLE orders (
+  order_id INTEGER NOT NULL PRIMARY KEY,
+  customer_id INTEGER NOT NULL,
+  employee_id INTEGER  -- Sales representative handling the order. NULL for self-service online orders.,
+  order_date TIMESTAMPTZ NOT NULL,
+  required_date DATE,
+  status VARCHAR(20) NOT NULL,
+  total_amount NUMERIC(12,2) NOT NULL  -- Denormalised order total including shipping. Should equal the sum of its order_items after discount, plus shipping_cost.,
+  shipping_cost NUMERIC(12,2) NOT NULL,
+  currency CHAR(3) NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL
+);
+
+CREATE TABLE payments (
+  payment_id INTEGER NOT NULL PRIMARY KEY,
+  order_id INTEGER NOT NULL,
+  payment_date TIMESTAMPTZ NOT NULL,
+  amount NUMERIC(12,2) NOT NULL,
+  payment_method VARCHAR(30) NOT NULL,
+  status VARCHAR(20) NOT NULL,
+  transaction_ref VARCHAR(100)
+);
+
+CREATE TABLE products (
+  product_id INTEGER NOT NULL PRIMARY KEY,
+  product_name VARCHAR(250) NOT NULL,
+  sku VARCHAR(64) NOT NULL,
+  category_id INTEGER NOT NULL,
+  supplier_id INTEGER,
+  unit_price NUMERIC(12,2) NOT NULL  -- Current list price. Historical sale prices live on order_items.unit_price.,
+  unit_cost NUMERIC(12,2)  -- Cost to acquire the product. Revenue minus cost gives margin.,
+  weight_kg NUMERIC(10,3),
+  is_discontinued BOOLEAN NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL
+);
+
+CREATE TABLE shipments (
+  shipment_id INTEGER NOT NULL PRIMARY KEY,
+  order_id INTEGER NOT NULL,
+  warehouse_id INTEGER NOT NULL,
+  shipped_date TIMESTAMPTZ,
+  delivered_date TIMESTAMPTZ  -- When the shipment reached the customer. NULL if not yet delivered.,
+  carrier VARCHAR(100),
+  tracking_number VARCHAR(100),
+  status VARCHAR(20) NOT NULL
+);
+
+CREATE TABLE suppliers (
+  supplier_id INTEGER NOT NULL PRIMARY KEY,
+  supplier_name VARCHAR(200) NOT NULL,
+  contact_name VARCHAR(150),
+  contact_email VARCHAR(255),
+  phone VARCHAR(40),
+  country VARCHAR(100) NOT NULL,
+  city VARCHAR(100),
+  rating NUMERIC(3,2),
+  is_active BOOLEAN NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL
+);
+
+CREATE TABLE warehouses (
+  warehouse_id INTEGER NOT NULL PRIMARY KEY,
+  warehouse_name VARCHAR(150) NOT NULL,
+  country VARCHAR(100) NOT NULL,
+  city VARCHAR(100) NOT NULL,
+  capacity_units INTEGER NOT NULL,
+  is_active BOOLEAN NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL
+);
+
+-- Foreign key relationships (join paths):
+--   categories.parent_category_id -> categories.category_id  [nullable: use LEFT JOIN to keep unmatched rows]
+--   employees.department_id -> departments.department_id
+--   employees.manager_id -> employees.employee_id  [nullable: use LEFT JOIN to keep unmatched rows]
+--   inventory.product_id -> products.product_id
+--   inventory.warehouse_id -> warehouses.warehouse_id
+--   order_items.order_id -> orders.order_id
+--   order_items.product_id -> products.product_id
+--   orders.customer_id -> customers.customer_id
+--   orders.employee_id -> employees.employee_id  [nullable: use LEFT JOIN to keep unmatched rows]
+--   payments.order_id -> orders.order_id
+--   products.category_id -> categories.category_id
+--   products.supplier_id -> suppliers.supplier_id  [nullable: use LEFT JOIN to keep unmatched rows]
+--   shipments.order_id -> orders.order_id
+--   shipments.warehouse_id -> warehouses.warehouse_id

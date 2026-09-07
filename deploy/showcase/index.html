@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Enterprise Text-to-SQL — evaluation explorer</title>
+<style>
+:root{
+  --bg:#fbfbfa; --panel:#fff; --ink:#1a1a18; --muted:#6b6b66; --line:#e6e5e1;
+  --accent:#c8623a; --accent-soft:#fdf0ea; --ok:#2f7d52; --ok-soft:#eaf5ee;
+  --bad:#b3402f; --bad-soft:#fcecea; --warn:#946200; --warn-soft:#fdf3e0;
+  --code:#f5f4f1;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#141418; --panel:#1d1d22; --ink:#eceae6; --muted:#98958e; --line:#31313a;
+  --accent:#e08d67; --accent-soft:#2b2018; --ok:#6cc08d; --ok-soft:#17251c;
+  --bad:#e08a7a; --bad-soft:#2a1a17; --warn:#d6a94a; --warn-soft:#2a2214;
+  --code:#16161a;
+}}
+:root[data-theme="dark"]{
+  --bg:#141418; --panel:#1d1d22; --ink:#eceae6; --muted:#98958e; --line:#31313a;
+  --accent:#e08d67; --accent-soft:#2b2018; --ok:#6cc08d; --ok-soft:#17251c;
+  --bad:#e08a7a; --bad-soft:#2a1a17; --warn:#d6a94a; --warn-soft:#2a2214;
+  --code:#16161a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:15px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+code,pre,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+a{color:var(--accent)}
+header{border-bottom:1px solid var(--line);background:var(--panel)}
+.bar{max-width:1240px;margin:0 auto;padding:16px 20px}
+h1{margin:0;font-size:19px;letter-spacing:-.015em}
+h1 span{color:var(--muted);font-weight:400;font-size:15px}
+.lede{margin:8px 0 0;max-width:74ch;color:var(--muted);font-size:14px}
+.lede b{color:var(--ink)}
+.links{margin-top:10px;display:flex;gap:14px;flex-wrap:wrap;font-size:13px}
+nav{max-width:1240px;margin:0 auto;padding:0 20px;display:flex;gap:2px}
+nav button{background:none;border:0;border-bottom:2px solid transparent;color:var(--muted);
+  padding:11px 13px;cursor:pointer;font:inherit;font-size:14px}
+nav button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+main{max-width:1240px;margin:0 auto;padding:22px 20px 70px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:12px;margin-bottom:20px}
+.stat .box{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
+.stat .lab{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.stat .val{font-size:25px;font-weight:670;letter-spacing:-.02em;margin-top:3px}
+.up{color:var(--ok)}.down{color:var(--bad)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left}
+th{color:var(--muted);font-weight:600;font-size:12.5px;text-transform:uppercase;letter-spacing:.03em}
+td.n,th.n{text-align:right;font-family:ui-monospace,monospace}
+tr.best td{background:var(--accent-soft)}
+.tablewrap{overflow-x:auto}
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+input[type=search],select{padding:7px 10px;border-radius:8px;border:1px solid var(--line);
+  background:var(--panel);color:var(--ink);font:inherit;font-size:14px}
+input[type=search]{flex:1;min-width:210px}
+.count{color:var(--muted);font-size:13px}
+.grid{display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);gap:18px;align-items:start}
+@media(max-width:920px){.grid{grid-template-columns:1fr}}
+.list{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel);
+  max-height:74vh;overflow-y:auto}
+.item{padding:10px 12px;border-bottom:1px solid var(--line);cursor:pointer;font-size:13.5px}
+.item:last-child{border-bottom:0}
+.item:hover{background:var(--code)}
+.item[aria-selected="true"]{background:var(--accent-soft)}
+.item .q{display:block;margin-bottom:5px;line-height:1.4}
+.badges{display:flex;gap:5px;flex-wrap:wrap}
+.b{font-size:10.5px;padding:2px 6px;border-radius:999px;font-weight:600;letter-spacing:.02em}
+.b.tier{background:var(--code);color:var(--muted)}
+.b.ok{background:var(--ok-soft);color:var(--ok)}
+.b.no{background:var(--bad-soft);color:var(--bad)}
+pre.sql{background:var(--code);border:1px solid var(--line);border-radius:8px;padding:11px;
+  overflow-x:auto;font-size:12.8px;margin:6px 0 0;white-space:pre-wrap;word-break:break-word}
+.kw{color:var(--accent);font-weight:600}
+.cfg{margin-bottom:16px}
+.cfg h3{margin:0 0 2px;font-size:13px;display:flex;align-items:center;gap:8px}
+.cfg .why{color:var(--muted);font-size:12.5px;margin:3px 0 0}
+.note{background:var(--warn-soft);color:var(--warn);border-radius:8px;padding:11px 13px;font-size:13.5px}
+.empty{color:var(--muted);text-align:center;padding:50px 0}
+details{border:1px solid var(--line);border-radius:8px;padding:11px 13px;margin-top:12px;background:var(--panel)}
+summary{cursor:pointer;color:var(--muted);font-size:13.5px}
+details[open] summary{color:var(--ink);margin-bottom:8px}
+footer{max-width:1240px;margin:0 auto;padding:0 20px 44px;color:var(--muted);font-size:12.5px}
+.hidden{display:none!important}
+h2{font-size:16px;margin:26px 0 10px}
+p{max-width:78ch}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="bar">
+    <h1>Enterprise Text-to-SQL <span>— fine-tuning, measured</span></h1>
+    <p class="lede">
+      A QLoRA-fine-tuned Qwen3-8B turns business questions into PostgreSQL.
+      Fine-tuning took strict execution accuracy from <b>10.82&nbsp;%</b> to
+      <b>50.99&nbsp;%</b>, and <b>52.10&nbsp;%</b> with a self-correction loop —
+      measured on 453 held-out questions by <b>executing</b> every query against
+      a real database, never by string similarity.
+    </p>
+    <div class="links">
+      <a href="https://huggingface.co/hari-krishna-ai/qwen3-8b-text2sql-qlora">📦 Model</a>
+      <span class="count">453 questions · 5 configurations · every prediction below is real</span>
+    </div>
+  </div>
+  <nav>
+    <button id="tab-explore" aria-selected="true">Explorer</button>
+    <button id="tab-bench" aria-selected="false">Benchmark</button>
+    <button id="tab-how" aria-selected="false">How it works</button>
+  </nav>
+</header>
+
+<main>
+
+<section id="panel-explore">
+  <div class="controls">
+    <input type="search" id="q" placeholder="Search 453 questions or SQL…">
+    <select id="tier">
+      <option value="">all difficulties</option>
+      <option value="easy">easy</option><option value="medium">medium</option>
+      <option value="hard">hard</option><option value="very_hard">very hard</option>
+      <option value="enterprise">enterprise</option>
+    </select>
+    <select id="filter">
+      <option value="">all outcomes</option>
+      <option value="ft-ok">fine-tuned got it right</option>
+      <option value="ft-no">fine-tuned got it wrong</option>
+      <option value="flip">base wrong → fine-tuned right</option>
+      <option value="regress">base right → fine-tuned wrong</option>
+      <option value="broke">did not execute at all</option>
+    </select>
+    <span class="count" id="count"></span>
+  </div>
+
+  <div class="grid">
+    <div class="list" id="list"></div>
+    <div id="detail" class="card"><div class="empty">Pick a question.</div></div>
+  </div>
+</section>
+
+<section id="panel-bench" class="hidden">
+  <div class="stat">
+    <div class="box"><div class="lab">Base model</div><div class="val">10.82 %</div></div>
+    <div class="box"><div class="lab">Fine-tuned</div><div class="val up">50.99 %</div></div>
+    <div class="box"><div class="lab">+ self-correction</div><div class="val up">52.10 %</div></div>
+    <div class="box"><div class="lab">Trainable params</div><div class="val">0.917 %</div></div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">Ablation — 453 held-out questions</h2>
+    <p class="lede">Same questions, same harness, same database. Only the named component changes.</p>
+    <div class="tablewrap"><table id="ablation"></table></div>
+  </div>
+
+  <h2>Where the gain actually came from</h2>
+  <div class="grid">
+    <div class="card">
+      <div class="tablewrap"><table>
+        <tr><th>failure mode</th><th class="n">base</th><th class="n">fine-tuned</th></tr>
+        <tr><td>right rows, <b>wrong columns</b></td><td class="n">159</td><td class="n up">0</td></tr>
+        <tr><td>genuinely wrong rows</td><td class="n">240</td><td class="n">203</td></tr>
+      </table></div>
+      <p class="lede" style="margin-top:12px">The benchmark's largest failure was returning
+        correct data under a different column projection — <i>"show orders in 2023"</i> never says
+        which columns to return. That went to zero. Genuinely wrong answers fell far less.</p>
+      <p class="lede"><b>So most of the +40 points is the model learning this database's column
+        conventions, not becoming dramatically better at SQL logic.</b></p>
+    </div>
+    <div class="card">
+      <div class="tablewrap"><table>
+        <tr><th>tier</th><th class="n">n</th><th class="n">base</th><th class="n">fine-tuned</th><th class="n">Δ</th></tr>
+        <tr><td>easy</td><td class="n">126</td><td class="n">0.0</td><td class="n">23.0</td><td class="n up">+23.0</td></tr>
+        <tr><td>medium</td><td class="n">63</td><td class="n">52.4</td><td class="n">52.4</td><td class="n">+0.0</td></tr>
+        <tr class="best"><td><b>hard</b></td><td class="n">144</td><td class="n">3.5</td><td class="n"><b>84.7</b></td><td class="n up">+81.2</td></tr>
+        <tr><td>enterprise</td><td class="n">84</td><td class="n">13.1</td><td class="n">52.4</td><td class="n up">+39.3</td></tr>
+      </table></div>
+      <p class="lede" style="margin-top:12px">The <code>hard</code> tier — multi-table joins and
+        subqueries — is where reasoning genuinely improved. <code>medium</code> did not move at
+        all, and that is unexplained rather than glossed over.</p>
+    </div>
+  </div>
+
+  <h2>Two results that did not go as expected</h2>
+  <div class="grid">
+    <div class="card">
+      <h3 style="margin-top:0;font-size:14px">Schema retrieval made things worse — twice</h3>
+      <p class="lede">Showing only the retrieved tables cost the base model 1.55 points and the
+        fine-tuned model <b>9.27</b>. The adapter only ever saw full-schema prompts, so subsets are
+        out of distribution for it — and the damage lands on <code>hard</code> (−20.8) and
+        <code>enterprise</code> (−13.1), the tiers that need joins. Drop a table a join needs and
+        the model invents one: hallucination nearly doubles.</p>
+      <p class="lede">With 12 tables the whole schema is 5,455 characters.
+        <b>Retrieval solves a problem this database does not have.</b></p>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0;font-size:14px">Self-correction: two rates, not one</h3>
+      <div class="tablewrap"><table>
+        <tr><td>repair <b>success</b> — now executes</td><td class="n">11 / 19</td><td class="n">57.9 %</td></tr>
+        <tr><td>repair <b>correctness</b> — right rows</td><td class="n">5 / 19</td><td class="n">26.3 %</td></tr>
+      </table></div>
+      <p class="lede" style="margin-top:12px"><b>Six of the eleven "successes" turned a crash into
+        a confident wrong answer.</b> One rate would have claimed 57.9 % and hidden that.</p>
+      <p class="lede">Repair works when the error <i>names the fix</i>
+        (<code>column "method" does not exist</code> → rename to <code>payment_method</code>) and
+        fails when it names only the <i>symptom</i> (<code>ambiguous column reference</code>).</p>
+    </div>
+  </div>
+</section>
+
+<section id="panel-how" class="hidden">
+  <div class="card">
+    <h2 style="margin-top:0">The pipeline</h2>
+    <pre class="sql">question → prompt (frozen template) → Qwen3-8B + QLoRA adapter → SQL
+        → static validation   parseable? one statement? read-only? real tables?
+        → PostgreSQL          read-only session, 30 s statement timeout
+        → success → rows
+        → failure → repair    the database's own error fed back, retried once</pre>
+
+    <h2>How correctness is judged</h2>
+    <p>By <b>execution</b>, never string similarity. Every prediction runs against PostgreSQL and
+      its result set is fingerprinted. These are different strings and both count as correct:</p>
+    <pre class="sql">SELECT COUNT(*)           FROM customers WHERE country = 'India';
+SELECT COUNT(customer_id) FROM customers WHERE country = 'India';</pre>
+    <p>Order is compared only where the gold query has an <code>ORDER BY</code>. A second,
+      <b>projection-tolerant</b> metric wraps the prediction in a subquery and asks for the gold
+      columns — that is what separates "wrong columns" from "wrong rows", and it is the whole
+      reason the 159 → 0 finding above is visible at all.</p>
+
+    <h2>Guardrails</h2>
+    <table>
+      <tr><td>Leakage-free splits by <b>template group</b></td><td class="n">74 train / 48 test templates, <b>zero overlap</b></td></tr>
+      <tr><td>Prompt fingerprint asserted at every stage</td><td class="n"><code>8288e41a496531a9</code></td></tr>
+      <tr><td>Schema fingerprint asserted at every stage</td><td class="n"><code>d03619e711661bc5</code></td></tr>
+      <tr><td>The GPU host that generates never receives gold SQL</td><td class="n">asserted both ends</td></tr>
+      <tr><td>Oracle self-test — gold SQL through the scorer</td><td class="n">must return 100 %</td></tr>
+    </table>
+
+    <h2>Training</h2>
+    <table>
+      <tr><td>base</td><td><code>Qwen/Qwen3-8B</code> @ <code>b968826d9c46</code>, 4-bit NF4</td></tr>
+      <tr><td>adapter</td><td>LoRA r=16, α=32, all 7 attention + MLP projections</td></tr>
+      <tr><td>trainable</td><td><b>43,646,976 of 4,761,498,624 — 0.917 %</b></td></tr>
+      <tr><td>hardware / time</td><td>one free Kaggle T4, 1 epoch, 4 h 53 m</td></tr>
+      <tr><td>loss</td><td><b>completion-only</b> — prompt masked to −100</td></tr>
+      <tr><td>supervised token share</td><td><b>3.01 %</b></td></tr>
+    </table>
+    <p><b>Why completion-only loss is the detail that matters.</b> Each example is ~1,490 prompt
+      tokens and ~46 completion tokens, and the prompt is ~97 % schema, byte-identical across all
+      2,133 examples. Training on the full sequence sends ~97 % of the gradient into memorising a
+      schema the model is <i>handed</i> at inference — and the loss curve looks excellent
+      throughout, because predicting a constant is easy.</p>
+
+    <h2>Limitations</h2>
+    <ul class="lede">
+      <li><b>Schema-specific.</b> It learned <i>this</i> database's conventions — that is most of
+        the measured gain.</li>
+      <li><b>Roughly half its answers are still wrong.</b></li>
+      <li><b>Test questions are template-generated</b>, from the same generator as training. Real
+        user phrasing — abbreviations, typos, ambiguity — is untested. The biggest caveat on the
+        headline number.</li>
+      <li><b>One epoch, one seed, one run.</b> No variance estimate.</li>
+      <li><b>Silent wrong answers are the real risk.</b> SQL that runs and returns the wrong rows
+        is indistinguishable from a correct answer without a gold reference — and repair cannot
+        help, because there is no error to feed back.</li>
+    </ul>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  Every prediction on this page was produced by the models described and scored by executing it
+  against PostgreSQL. Nothing is recomputed in the browser.
+</footer>
+
+<script>
+const $ = s => document.querySelector(s);
+const KW = /\b(SELECT|FROM|WHERE|GROUP BY|ORDER BY|HAVING|JOIN|LEFT JOIN|INNER JOIN|ON|AS|AND|OR|NOT|IN|LIMIT|COUNT|SUM|AVG|MIN|MAX|DISTINCT|CASE|WHEN|THEN|ELSE|END|WITH|EXTRACT|DATE_TRUNC|IS NULL|IS NOT NULL|DESC|ASC|BETWEEN|NULLIF|COALESCE|OVER|PARTITION BY)\b/g;
+const esc = s => String(s ?? "").replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const hl = s => esc(s).replace(KW, m => `<span class="kw">${m}</span>`);
+const TIER = {easy:"easy", medium:"medium", hard:"hard", very_hard:"very hard", enterprise:"enterprise"};
+
+let DATA = null, filtered = [], selected = null;
+
+for (const n of ["explore","bench","how"]) {
+  $("#tab-"+n).onclick = () => {
+    for (const o of ["explore","bench","how"]) {
+      $("#tab-"+o).setAttribute("aria-selected", String(o===n));
+      $("#panel-"+o).classList.toggle("hidden", o!==n);
+    }
+  };
+}
+
+function matches(e) {
+  const term = $("#q").value.trim().toLowerCase();
+  const tier = $("#tier").value, f = $("#filter").value;
+  if (tier && e.d !== tier) return false;
+  if (term) {
+    const hay = (e.q + " " + (e.ft?.sql||"") + " " + e.gold).toLowerCase();
+    if (!hay.includes(term)) return false;
+  }
+  const b = e.base?.ok, t = e.ft?.ok;
+  if (f === "ft-ok"   && !t) return false;
+  if (f === "ft-no"   &&  t) return false;
+  if (f === "flip"    && !(!b && t)) return false;
+  if (f === "regress" && !(b && !t)) return false;
+  if (f === "broke"   && !(e.ft && !["correct","wrong_result"].includes(e.ft.outcome))) return false;
+  return true;
+}
+
+function renderList() {
+  filtered = DATA.examples.filter(matches);
+  $("#count").textContent = `${filtered.length} of ${DATA.examples.length}`;
+  $("#list").innerHTML = filtered.slice(0, 300).map((e, i) => `
+    <div class="item" data-i="${i}" aria-selected="${selected===e.id}">
+      <span class="q">${esc(e.q)}</span>
+      <span class="badges">
+        <span class="b tier">${TIER[e.d]||e.d}</span>
+        <span class="b ${e.base?.ok?"ok":"no"}">base ${e.base?.ok?"✓":"✗"}</span>
+        <span class="b ${e.ft?.ok?"ok":"no"}">tuned ${e.ft?.ok?"✓":"✗"}</span>
+      </span>
+    </div>`).join("") ||
+    `<div class="empty">Nothing matches.</div>`;
+  if (filtered.length > 300)
+    $("#list").insertAdjacentHTML("beforeend",
+      `<div class="empty">…and ${filtered.length-300} more. Narrow the search.</div>`);
+}
+
+function cfgBlock(e, key, label) {
+  const c = e[key];
+  if (!c) return "";
+  const good = c.ok;
+  const why = good ? "returned exactly the gold result set"
+    : c.outcome === "wrong_result" ? "ran successfully but returned different rows"
+    : `did not execute — ${esc(c.err || c.outcome)}`;
+  return `<div class="cfg">
+    <h3>${esc(label)} <span class="b ${good?"ok":"no"}">${good?"correct":"wrong"}</span></h3>
+    <div class="why">${why}</div>
+    <pre class="sql">${c.sql ? hl(c.sql) : "<i>no SQL produced</i>"}</pre>
+  </div>`;
+}
+
+function renderDetail(e) {
+  selected = e.id;
+  const flip = !e.base?.ok && e.ft?.ok;
+  $("#detail").innerHTML = `
+    <div style="margin-bottom:14px">
+      <div class="badges" style="margin-bottom:8px">
+        <span class="b tier">${TIER[e.d]||e.d}</span>
+        <span class="b tier">${esc(e.id)}</span>
+        ${flip ? '<span class="b ok">fine-tuning fixed this one</span>' : ''}
+      </div>
+      <div style="font-size:16px;font-weight:600;line-height:1.4">${esc(e.q)}</div>
+    </div>
+    <div class="cfg">
+      <h3>Gold SQL <span class="b tier">reference</span></h3>
+      <div class="why">what the answer had to match, by result set</div>
+      <pre class="sql">${hl(e.gold)}</pre>
+    </div>
+    ${DATA.configs.map(c => cfgBlock(e, c.key, c.label)).join("")}
+    <details><summary>How this was scored</summary>
+      <p class="lede" style="margin:0">Each query above was executed against PostgreSQL and its
+      result set fingerprinted (MD5 over sorted, stringified rows), then compared with the gold
+      query's fingerprint. Column names and row order do not have to match — only the data —
+      except where the gold query has an <code>ORDER BY</code>.</p>
+    </details>`;
+  renderList();
+}
+
+$("#list").onclick = ev => {
+  const el = ev.target.closest(".item");
+  if (el) renderDetail(filtered[+el.dataset.i]);
+};
+for (const id of ["q","tier","filter"]) $("#"+id).oninput = () => renderList();
+
+function renderAblation() {
+  const m = DATA.metrics, order = ["base","ftr","ft","repair"];
+  const label = {base:"1 · base", ftr:"4 · FT + retrieval", ft:"3 · fine-tuned",
+                 repair:"5 · FT + repair"};
+  const rows = [
+    ["strict execution accuracy","accuracy",true],
+    ["projection-tolerant","projection",true],
+    ["executable SQL","executable",true],
+    ["schema hallucination","hallucination",false],
+  ];
+  const cols = order.filter(k => m[k]);
+  let html = `<tr><th>metric</th><th class="n">2 · base + retr</th>` +
+    cols.map(k=>`<th class="n">${label[k]}</th>`).join("") + `</tr>`;
+  const RETR = {accuracy:9.27, projection:43.93, executable:92.27, hallucination:3.31};
+  for (const [name, key, up] of rows) {
+    const vals = cols.map(k => m[k][key]);
+    const all = [RETR[key], ...vals].filter(v => v != null);
+    const best = up ? Math.max(...all) : Math.min(...all);
+    const cell = v => v == null ? "—"
+      : (Math.abs(v-best) < 1e-9 ? `<b>${v.toFixed(2)}</b>` : v.toFixed(2));
+    html += `<tr><td>${name}</td><td class="n">${cell(RETR[key])}</td>` +
+      vals.map(v=>`<td class="n">${cell(v)}</td>`).join("") + `</tr>`;
+  }
+  $("#ablation").innerHTML = html;
+}
+
+fetch("data.json").then(r => r.json()).then(d => {
+  DATA = d;
+  renderAblation();
+  renderList();
+  renderDetail(d.examples[0]);
+}).catch(err => {
+  $("#list").innerHTML = `<div class="empty">Could not load data.json — ${esc(err.message)}</div>`;
+});
+</script>
+</body>
+</html>

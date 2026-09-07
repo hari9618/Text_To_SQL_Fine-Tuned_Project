@@ -1,0 +1,8 @@
+# ZeroGPU pins torch itself; do not pin it here or the Space will fight the
+# platform. Everything else is what the adapter needs to load and run.
+transformers>=4.51
+peft>=0.14
+accelerate>=1.0
+bitsandbytes>=0.45
+sentencepiece
+sqlglot==25.34.1
