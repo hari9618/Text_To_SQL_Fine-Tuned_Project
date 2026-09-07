@@ -50,20 +50,36 @@ class DatabaseConfig:
     database: str
     user: str
     password: str
+    # Managed Postgres (Neon, Supabase, RDS) refuses plaintext connections, so
+    # the deployed service needs sslmode=require. Local development does not
+    # have a certificate and would fail if this were required there, hence a
+    # setting rather than a constant. Default "prefer" is libpq's own: it uses
+    # TLS when the server offers it and falls back when it does not.
+    sslmode: str = "prefer"
 
     def conninfo(self) -> str:
         """Return a libpq connection string for psycopg."""
         return (
             f"host={self.host} port={self.port} dbname={self.database} "
-            f"user={self.user} password={self.password}"
+            f"user={self.user} password={self.password} sslmode={self.sslmode}"
         )
 
     def __repr__(self) -> str:
         """Redact the password so it cannot leak into logs or tracebacks."""
         return (
             f"DatabaseConfig(host={self.host!r}, port={self.port}, "
-            f"database={self.database!r}, user={self.user!r}, password='***')"
+            f"database={self.database!r}, user={self.user!r}, password='***', "
+            f"sslmode={self.sslmode!r})"
         )
+
+
+def _sslmode() -> str:
+    """TLS mode for the connection, from ``PGSSLMODE``.
+
+    Named after libpq's own variable so the standard tooling (psql, pg_dump)
+    picks up the same value from the same environment.
+    """
+    return os.getenv("PGSSLMODE", "prefer").strip() or "prefer"
 
 
 def _port() -> int:
@@ -96,6 +112,7 @@ def superuser_config(database: str | None = None) -> DatabaseConfig:
         database=database or "postgres",
         user=os.getenv("PGSUPERUSER", "postgres").strip(),
         password=_require("PGSUPERPASSWORD"),
+        sslmode=_sslmode(),
     )
 
 
@@ -111,4 +128,5 @@ def app_config() -> DatabaseConfig:
         database=target_database_name(),
         user=_require("APP_DB_USER"),
         password=_require("APP_DB_PASSWORD"),
+        sslmode=_sslmode(),
     )

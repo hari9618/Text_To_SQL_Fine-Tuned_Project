@@ -53,6 +53,8 @@ from src.sql.config import PROJECT_ROOT  # noqa: E402
 IMAGES = {
     "api": PROJECT_ROOT / "docker" / "Dockerfile",
     "tools": PROJECT_ROOT / "docker" / "Dockerfile.tools",
+    # The Hugging Face Space image: same contents, different port handling.
+    "space": PROJECT_ROOT / "deploy" / "Dockerfile",
 }
 API_MODULES = [
     "src.api.main", "src.api.service", "src.api.backends", "src.api.schemas",
@@ -170,7 +172,8 @@ def main() -> int:
 
         # ---- 4. imports ----------------------------------------------------
         print("\n4. Imports resolve from the image tree alone")
-        for image, modules in (("api", API_MODULES), ("tools", TOOLS_MODULES)):
+        for image, modules in (("api", API_MODULES), ("tools", TOOLS_MODULES),
+                               ("space", API_MODULES)):
             tree = work / image
             code = "import " + ", ".join(modules)
             proc = subprocess.run(
