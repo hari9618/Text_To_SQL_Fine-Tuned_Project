@@ -94,13 +94,13 @@ Exposed as a FastAPI service (`POST /query`).
 
 453 unseen test questions. Execution-based scoring throughout.
 
-| metric | 1. Base | 2. Base + retrieval | 3. **Fine-tuned** |
-|---|---:|---:|---:|
-| **strict execution accuracy** | 10.82 % | 9.27 % | **50.99 %** |
-| projection-tolerant accuracy | 45.92 % | 43.93 % | 50.99 % |
-| executable SQL | 98.90 % | 92.27 % | 95.81 % |
-| schema hallucination | 0.66 % | 3.31 % | 1.99 % |
-| syntax errors | 0.00 % | 0.00 % | 0.22 % |
+| metric | 1. Base | 2. Base + retrieval | 3. **Fine-tuned** | 4. Fine-tuned + retrieval |
+|---|---:|---:|---:|---:|
+| **strict execution accuracy** | 10.82 % | 9.27 % | **50.99 %** | 41.72 % |
+| projection-tolerant accuracy | 45.92 % | 43.93 % | 50.99 % | 41.72 % |
+| executable SQL | 98.90 % | 92.27 % | 95.81 % | 94.92 % |
+| schema hallucination | 0.66 % | 3.31 % | 1.99 % | 3.53 % |
+| syntax errors | 0.00 % | 0.00 % | 0.22 % | 0.00 % |
 
 ### By difficulty
 
@@ -125,18 +125,26 @@ very likely pay off at 200 tables; at 12 it costs accuracy.
 
 That is why the fine-tuning dataset was built on the **full** schema.
 
+And it holds after fine-tuning — **more strongly.** Configuration 4 measures the
+adapter on retrieved schemas: 50.99 % → **41.72 %**, a 9.27-point fall against
+the base model's 1.55. The adapter was trained exclusively on full-schema
+prompts, so a subset is out of distribution for it; and the damage lands on
+`hard` (−20.8 pp) and `enterprise` (−13.1 pp), the tiers that need joins. Drop a
+table a join needs and the model invents it — hallucination nearly doubles.
+`medium` is the one tier that improves (+7.9 pp): single-table aggregations,
+where a smaller schema really is less distracting.
+
 ### Not yet measured
 
 | # | configuration | status |
 |---|---|---|
-| 4 | Fine-tuned + schema retrieval | **not measured** — needs a GPU run |
 | 5 | Fine-tuned + repair | **not measured** — needs a GPU run |
 
-Everything for both is built, tested and staged: eval packs export, the
-notebooks are verified against the real chat template, and the scorers are
-validated with synthetic inputs. They are listed here rather than omitted,
-because a gap in an ablation table invites the reader to assume the missing row
-would have agreed with the others.
+Everything for it is built, tested and staged: the repair pack exports, the
+notebook is verified against the real chat template, and the scorer is validated
+with two synthetic repair files. It is listed here rather than omitted, because
+a gap in an ablation table invites the reader to assume the missing row would
+have agreed with the others.
 
 Run `scripts/ablation_report.py` to regenerate
 [`experiments/ABLATION.md`](experiments/ABLATION.md) as configurations land.

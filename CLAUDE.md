@@ -91,17 +91,16 @@ Work strictly in order. **Do not implement future phases prematurely.**
 | 11     | SQL error detection and repair                    | built, GPU run pending |
 | 12     | Production-style API                              | **complete** |
 | 13     | Docker / deployment                               | **complete** (build unrun) |
-| 14     | Final benchmark, ablation study, documentation    | **complete** (3/5 configs) |
+| 14     | Final benchmark, ablation study, documentation    | **complete** (4/5 configs) |
 
 Update this table as phases complete.
 
-**Two measurements remain, both hard-blocked on GPU access** (no local CUDA;
+**One measurement remains, hard-blocked on GPU access** (no local CUDA;
 HF Jobs needs a Pro account and this one is `is_pro: false`). Everything for
 them is built, verified and staged:
 
 | config | upload | notebook | output | then |
 | --- | --- | --- | --- | --- |
-| 4 fine-tuned + retrieval | `text2sql-evalpack-retrieved.zip` | `kaggle_generate_finetuned.ipynb` | `predictions_retrieved.jsonl` | `scripts/score_finetuned.py` |
 | 5 fine-tuned + repair | `text2sql-repairpack.zip` | `kaggle_repair_finetuned.ipynb` | `repairs.jsonl` | `scripts/score_repair.py` |
 
 Then `scripts/ablation_report.py` regenerates `experiments/ABLATION.md` with
@@ -399,6 +398,49 @@ handles both modes from one file, switched by `manifest.schema.mode`, and
 configuration 3 cannot be overwritten by configuration 4. Retrieved schemas
 average 2,407 chars / 5.08 tables against 5,455 / 12 full; 3 of 453 questions
 retrieve everything, which is the retriever degenerating, not a bug.
+
+### Configuration 4 result (frozen 2026-09-07)
+
+Fine-tuned adapter with a retrieved schema subset, k=4 / expand=2. Mean prompt
+727 tokens against ~1,490 for the full schema.
+
+| metric | cfg 3 full schema | cfg 4 retrieved | delta |
+| --- | ---: | ---: | ---: |
+| strict execution accuracy | **50.99 %** | 41.72 % | **-9.27** |
+| executable SQL | 95.81 % | 94.92 % | -0.89 |
+| schema hallucination | 1.99 % | **3.53 %** | +1.54 |
+
+By difficulty:
+
+| tier | n | cfg 3 | cfg 4 | delta |
+| --- | ---: | ---: | ---: | ---: |
+| easy | 126 | 23.0 % | 19.0 % | -4.0 |
+| medium | 63 | 52.4 % | **60.3 %** | +7.9 |
+| hard | 144 | **84.7 %** | 63.9 % | **-20.8** |
+| very_hard | 36 | 8.3 % | 5.6 % | -2.8 |
+| enterprise | 84 | 52.4 % | 39.3 % | -13.1 |
+
+**Retrieval hurts the fine-tuned model six times harder than it hurt the base
+model** (-9.27 pp against -1.55 pp). Two reasons, and they compound:
+
+* The adapter was trained *exclusively* on full-schema prompts, so a retrieved
+  subset is out of distribution for it in a way it was not for the base model.
+* The damage concentrates on `hard` (-20.8) and `enterprise` (-13.1) — exactly
+  the tiers that need multiple tables. When the retriever drops a table a join
+  needs, the model invents it: hallucination nearly doubles, 1.99 % -> 3.53 %.
+
+`medium` is the one tier that *improved* (+7.9). Those are single-table
+aggregations where a smaller schema is genuinely less distracting — which is
+the effect retrieval is supposed to have, visible only where the query does not
+need a join.
+
+**The release gate blocks configuration 4** on hallucination (+2.87 pp against a
+2.0 pp tolerance) despite its +30.90 pp gain over the baseline. Improvement
+alone does not earn a release.
+
+Conclusion, now measured rather than assumed: **retrieval is the wrong tool for
+this 12-table schema, for the base model and the fine-tuned model alike.** Keep
+the full schema.
 
 ### Hardware constraint (important)
 
