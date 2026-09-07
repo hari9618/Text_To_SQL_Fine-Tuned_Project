@@ -275,3 +275,30 @@ def test_no_credentials_leak_in_any_response(client):
 def test_unknown_backend_fails_loudly():
     with pytest.raises(RuntimeError, match="unknown MODEL_BACKEND"):
         build_model("does-not-exist")
+
+
+# --------------------------------------------------------------- demo UI --
+
+def test_root_serves_the_demo_ui(client):
+    r = client.get("/")
+    assert r.status_code == 200
+    assert "text/html" in r.headers["content-type"]
+    body = r.text
+    assert "<title>Enterprise Text-to-SQL</title>" in body
+    # The UI drives the same public endpoints, not a private one.
+    for endpoint in ("/query", "/health", "/schema"):
+        assert endpoint in body
+
+
+def test_ui_contains_no_credentials(client):
+    """The page is served to anyone who can reach the service."""
+    body = client.get("/").text
+    assert app_config().password not in body
+    assert app_config().user not in body
+
+
+def test_ui_is_self_contained(client):
+    """No CDN, no build step: the container ships one file that just works."""
+    body = client.get("/").text
+    for pattern in ("http://", "https://cdn", "<script src=", "<link rel=\"stylesheet\""):
+        assert pattern not in body, f"UI reaches outside the container: {pattern}"

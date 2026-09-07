@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Enterprise Text-to-SQL</title>
+<style>
+:root{
+  --bg:#fbfbfa; --panel:#fff; --ink:#1a1a18; --muted:#6b6b66; --line:#e5e4e0;
+  --accent:#c8623a; --accent-soft:#fdf0ea; --ok:#2f7d52; --ok-soft:#eaf5ee;
+  --bad:#b3402f; --bad-soft:#fcecea; --warn:#946200; --warn-soft:#fdf3e0;
+  --code:#f5f4f1; --radius:10px;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#16161a; --panel:#1e1e23; --ink:#eceae6; --muted:#9a978f; --line:#32323a;
+    --accent:#e08d67; --accent-soft:#2b2018; --ok:#6cc08d; --ok-soft:#17251c;
+    --bad:#e08a7a; --bad-soft:#2a1a17; --warn:#d6a94a; --warn-soft:#2a2214;
+    --code:#17171b;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#16161a; --panel:#1e1e23; --ink:#eceae6; --muted:#9a978f; --line:#32323a;
+  --accent:#e08d67; --accent-soft:#2b2018; --ok:#6cc08d; --ok-soft:#17251c;
+  --bad:#e08a7a; --bad-soft:#2a1a17; --warn:#d6a94a; --warn-soft:#2a2214;
+  --code:#17171b;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:15px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;}
+code,pre,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+a{color:var(--accent)}
+
+header{border-bottom:1px solid var(--line);background:var(--panel)}
+.bar{max-width:1180px;margin:0 auto;padding:14px 20px;display:flex;gap:14px;
+  align-items:center;flex-wrap:wrap}
+.brand{font-weight:650;letter-spacing:-.01em;font-size:16px}
+.brand span{color:var(--muted);font-weight:400}
+.spacer{flex:1}
+.pill{font-size:12px;padding:3px 9px;border-radius:999px;border:1px solid var(--line);
+  color:var(--muted);white-space:nowrap}
+.pill.live{background:var(--ok-soft);color:var(--ok);border-color:transparent}
+.pill.down{background:var(--bad-soft);color:var(--bad);border-color:transparent}
+.iconbtn{background:none;border:1px solid var(--line);color:var(--muted);
+  border-radius:8px;padding:5px 9px;cursor:pointer;font-size:13px}
+.iconbtn:hover{color:var(--ink)}
+
+nav{max-width:1180px;margin:0 auto;padding:0 20px;display:flex;gap:2px}
+nav button{background:none;border:0;border-bottom:2px solid transparent;color:var(--muted);
+  padding:10px 12px;cursor:pointer;font-size:14px;font-family:inherit}
+nav button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+
+main{max-width:1180px;margin:0 auto;padding:22px 20px 60px}
+.grid{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:20px;align-items:start}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+.card h2{margin:0 0 4px;font-size:14px;letter-spacing:.02em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.card .sub{margin:0 0 14px;font-size:13px;color:var(--muted)}
+
+textarea{width:100%;min-height:78px;resize:vertical;padding:10px 12px;border-radius:8px;
+  border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit}
+textarea:focus{outline:2px solid var(--accent);outline-offset:-1px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}
+.chip{font-size:12px;padding:4px 9px;border-radius:999px;border:1px solid var(--line);
+  background:var(--bg);color:var(--muted);cursor:pointer;font-family:inherit;text-align:left}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.chip b{font-weight:600;color:var(--accent);margin-right:5px}
+
+.opts{display:flex;gap:16px;align-items:center;margin:14px 0 0;font-size:13px;color:var(--muted);flex-wrap:wrap}
+.opts input[type=number]{width:66px;padding:4px 6px;border-radius:6px;border:1px solid var(--line);
+  background:var(--bg);color:var(--ink);font:inherit}
+.run{margin-top:14px;width:100%;padding:10px;border:0;border-radius:8px;background:var(--accent);
+  color:#fff;font:600 15px inherit;cursor:pointer}
+.run:disabled{opacity:.55;cursor:progress}
+
+.steps{display:flex;flex-direction:column;gap:8px;margin:0 0 16px}
+.step{display:flex;gap:10px;align-items:flex-start;font-size:13px}
+.dot{width:18px;height:18px;border-radius:50%;flex:none;display:grid;place-items:center;
+  font-size:11px;font-weight:700;margin-top:1px}
+.dot.ok{background:var(--ok-soft);color:var(--ok)}
+.dot.bad{background:var(--bad-soft);color:var(--bad)}
+.dot.warn{background:var(--warn-soft);color:var(--warn)}
+.dot.idle{background:var(--code);color:var(--muted)}
+.step .what{font-weight:550}
+.step .why{color:var(--muted)}
+
+pre.sql{background:var(--code);border:1px solid var(--line);border-radius:8px;padding:12px;
+  overflow-x:auto;font-size:13px;margin:0;white-space:pre-wrap;word-break:break-word}
+.kw{color:var(--accent);font-weight:600}
+
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;margin-top:6px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:7px 10px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+th{background:var(--code);font-weight:600;color:var(--muted);position:sticky;top:0}
+tr:last-child td{border-bottom:0}
+td.num{text-align:right;font-family:ui-monospace,monospace}
+
+.meta{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:10px}
+.meta b{color:var(--ink);font-weight:600}
+.empty{color:var(--muted);font-size:13px;padding:26px 0;text-align:center}
+.err{background:var(--bad-soft);color:var(--bad);border-radius:8px;padding:10px 12px;font-size:13px;
+  margin-bottom:12px}
+.note{background:var(--warn-soft);color:var(--warn);border-radius:8px;padding:10px 12px;font-size:13px}
+
+.mtable{width:100%;border-collapse:collapse;font-size:14px}
+.mtable th,.mtable td{padding:9px 10px;border-bottom:1px solid var(--line)}
+.mtable td.n,.mtable th.n{text-align:right;font-family:ui-monospace,monospace}
+.mtable tr.best td{background:var(--accent-soft)}
+.mtable .lab{color:var(--muted)}
+.big{font-size:30px;font-weight:680;letter-spacing:-.02em}
+.stat{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:4px 0 20px}
+.stat .box{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+.stat .box .lab{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+.stat .box .val{font-size:24px;font-weight:670;letter-spacing:-.02em;margin-top:2px}
+.up{color:var(--ok)} .down{color:var(--bad)}
+
+details{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-top:10px;background:var(--panel)}
+summary{cursor:pointer;font-size:13px;color:var(--muted)}
+details[open] summary{margin-bottom:8px;color:var(--ink)}
+.schematable{font-size:12.5px}
+.schematable .t{font-weight:650;color:var(--accent)}
+footer{max-width:1180px;margin:0 auto;padding:0 20px 40px;color:var(--muted);font-size:12.5px}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="bar">
+    <div class="brand">Enterprise Text-to-SQL <span>&nbsp;·&nbsp;natural language, executed</span></div>
+    <div class="spacer"></div>
+    <span class="pill" id="modelPill">model …</span>
+    <span class="pill" id="healthPill">checking …</span>
+    <button class="iconbtn" id="themeBtn" title="Toggle theme">◐</button>
+  </div>
+  <nav>
+    <button id="tab-ask" aria-selected="true">Ask</button>
+    <button id="tab-bench" aria-selected="false">Benchmark</button>
+    <button id="tab-schema" aria-selected="false">Schema</button>
+  </nav>
+</header>
+
+<main>
+
+<!-- ───────────────────────────── ASK ───────────────────────────── -->
+<section id="panel-ask">
+<div class="grid">
+
+  <div class="card">
+    <h2>Ask</h2>
+    <p class="sub">A question in plain English. It becomes SQL, is validated, then executed
+      against PostgreSQL.</p>
+    <textarea id="q" placeholder="e.g. Who are the top 15 customers by revenue?"></textarea>
+    <div class="chips" id="examples"></div>
+    <div class="opts">
+      <label>max rows <input type="number" id="maxRows" value="50" min="1" max="1000"></label>
+      <label><input type="checkbox" id="repair" checked> self-correct on failure</label>
+    </div>
+    <button class="run" id="runBtn">Run</button>
+    <p class="sub" style="margin:12px 0 0">Read-only session, 30&nbsp;s statement timeout,
+      rows capped server-side. The model is never trusted — only asked.</p>
+  </div>
+
+  <div class="card">
+    <h2>Result</h2>
+    <p class="sub" id="resultSub">Nothing run yet.</p>
+    <div id="errBox" class="err hidden"></div>
+    <div class="steps" id="steps"></div>
+    <div id="sqlWrap" class="hidden">
+      <pre class="sql" id="sqlOut"></pre>
+      <div class="meta" id="metaOut"></div>
+    </div>
+    <div id="rowsWrap" class="hidden">
+      <div class="tablewrap"><table id="rowsTable"></table></div>
+      <div class="meta" id="rowsMeta"></div>
+    </div>
+    <div class="empty" id="emptyState">Ask something, or pick an example.</div>
+  </div>
+
+</div>
+</section>
+
+<!-- ────────────────────────── BENCHMARK ────────────────────────── -->
+<section id="panel-bench" class="hidden">
+  <div class="stat">
+    <div class="box"><div class="lab">Base model</div><div class="val">10.82 %</div></div>
+    <div class="box"><div class="lab">Fine-tuned</div><div class="val up">50.99 %</div></div>
+    <div class="box"><div class="lab">Change</div><div class="val up">+40.17 pp</div></div>
+    <div class="box"><div class="lab">Test questions</div><div class="val">453</div></div>
+  </div>
+
+  <div class="card" style="margin-bottom:18px">
+    <h2>Ablation</h2>
+    <p class="sub">Every row scored on the same 453 unseen questions, same harness, same database.
+      Only the named component changes.</p>
+    <div class="tablewrap">
+      <table class="mtable">
+        <tr><th>metric</th><th class="n">1 · base</th><th class="n">2 · + retrieval</th>
+            <th class="n">3 · fine-tuned</th><th class="n">4</th><th class="n">5</th></tr>
+        <tr class="best"><td><b>strict execution accuracy</b></td><td class="n">10.82</td>
+            <td class="n">9.27</td><td class="n"><b>50.99</b></td><td class="n lab">—</td><td class="n lab">—</td></tr>
+        <tr><td>projection-tolerant</td><td class="n">45.92</td><td class="n">43.93</td>
+            <td class="n">50.99</td><td class="n lab">—</td><td class="n lab">—</td></tr>
+        <tr><td>executable SQL</td><td class="n">98.90</td><td class="n">92.27</td>
+            <td class="n">95.81</td><td class="n lab">—</td><td class="n lab">—</td></tr>
+        <tr><td>schema hallucination</td><td class="n">0.66</td><td class="n">3.31</td>
+            <td class="n">1.99</td><td class="n lab">—</td><td class="n lab">—</td></tr>
+      </table>
+    </div>
+    <p class="sub" style="margin-top:10px">Configurations 4 (fine-tuned + retrieval) and
+      5 (+ repair) are <b>not measured</b> — both need a GPU. Listed rather than omitted: a hidden
+      gap invites the reader to assume the missing rows agreed.</p>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Where the gain came from</h2>
+      <p class="sub">The honest reading — most of it is column selection, not SQL reasoning.</p>
+      <table class="mtable">
+        <tr><th>failure</th><th class="n">base</th><th class="n">fine-tuned</th></tr>
+        <tr><td>right rows, <b>wrong columns</b></td><td class="n">159</td><td class="n up">0</td></tr>
+        <tr><td>genuinely wrong rows</td><td class="n">240</td><td class="n">203</td></tr>
+      </table>
+      <p class="sub" style="margin-top:12px">The benchmark's biggest failure was returning correct
+        data under a different projection — <i>"show orders in 2023"</i> never says which columns.
+        That went to zero. Genuinely wrong answers fell far less.</p>
+    </div>
+
+    <div class="card">
+      <h2>By difficulty</h2>
+      <p class="sub">Real reasoning improvement is concentrated in <code>hard</code>.</p>
+      <table class="mtable">
+        <tr><th>tier</th><th class="n">n</th><th class="n">base</th><th class="n">fine-tuned</th><th class="n">Δ</th></tr>
+        <tr><td>easy</td><td class="n">126</td><td class="n">0.0</td><td class="n">23.0</td><td class="n up">+23.0</td></tr>
+        <tr><td>medium</td><td class="n">63</td><td class="n">52.4</td><td class="n">52.4</td><td class="n lab">+0.0</td></tr>
+        <tr class="best"><td><b>hard</b></td><td class="n">144</td><td class="n">3.5</td><td class="n"><b>84.7</b></td><td class="n up">+81.2</td></tr>
+        <tr><td>enterprise</td><td class="n">84</td><td class="n">13.1</td><td class="n">52.4</td><td class="n up">+39.3</td></tr>
+      </table>
+      <p class="sub" style="margin-top:12px"><code>medium</code> did not move at all. Unexplained,
+        and reported rather than glossed over.</p>
+    </div>
+  </div>
+
+  <details>
+    <summary>How correctness is judged</summary>
+    <p class="sub" style="margin:0">By <b>execution</b>, never text similarity. Each prediction runs
+      against PostgreSQL and its result set is fingerprinted (MD5 over sorted, stringified rows).
+      <code>SELECT COUNT(*)</code> and <code>SELECT COUNT(customer_id)</code> are different strings
+      and both count as correct. Order is compared only where the gold query has an
+      <code>ORDER BY</code>.</p>
+    <p class="sub" style="margin:10px 0 0">Guardrails: leakage-free splits by template group,
+      prompt and schema fingerprints asserted at every stage, the GPU host never receives gold SQL,
+      and an oracle self-test (gold SQL through the scorer) must return 100 % before any real
+      number is trusted.</p>
+  </details>
+
+  <details>
+    <summary>Fine-tuning setup</summary>
+    <p class="sub" style="margin:0">QLoRA on a free Kaggle T4, one epoch, 4 h 53 m.
+      Base <code>Qwen/Qwen3-8B</code> in 4-bit NF4; LoRA r=16, α=32 on all seven attention and MLP
+      projections — <b>43,646,976 trainable of 4,761,498,624 (0.917 %)</b>.
+      Loss is computed on the SQL only: each example is ~1,490 prompt tokens and ~46 completion
+      tokens, and the prompt is ~97 % schema, identical across all 2,133 examples. Training on the
+      full sequence would spend the gradient memorising a schema the model is handed anyway.
+      <b>Supervised token share: 3.01 %.</b></p>
+  </details>
+</section>
+
+<!-- ─────────────────────────── SCHEMA ─────────────────────────── -->
+<section id="panel-schema" class="hidden">
+  <div class="card">
+    <h2>Schema shown to the model</h2>
+    <p class="sub" id="schemaSub">Loading…</p>
+    <div id="schemaTables"></div>
+    <details><summary>Raw schema text (exactly what goes in the prompt)</summary>
+      <pre class="sql" id="schemaRaw" style="max-height:420px;overflow:auto"></pre>
+    </details>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  Read-only role · statement timeout · static SQL validation · rows capped.
+  The three safety layers hold regardless of what the model writes.
+  <a href="/docs">API docs</a>
+</footer>
+
+<script>
+const $ = s => document.querySelector(s);
+const EXAMPLES = [
+  ["easy",       "Show orders placed in 2023."],
+  ["medium",     "How many orders are there in each status?"],
+  ["hard",       "Who are the top 15 customers by revenue?"],
+  ["enterprise", "What is our actual revenue, excluding cancelled and returned orders?"],
+  ["easy",       "How many customers are based in India?"],
+  ["hard",       "Which products have never been ordered?"]
+];
+const KEYWORDS = /\b(SELECT|FROM|WHERE|GROUP BY|ORDER BY|HAVING|JOIN|LEFT JOIN|INNER JOIN|ON|AS|AND|OR|NOT|IN|LIMIT|COUNT|SUM|AVG|MIN|MAX|DISTINCT|CASE|WHEN|THEN|ELSE|END|WITH|EXTRACT|DATE_TRUNC|IS NULL|IS NOT NULL|DESC|ASC|BETWEEN)\b/g;
+
+function esc(s){ return String(s??"").replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
+function highlight(sql){ return esc(sql).replace(KEYWORDS, m => `<span class="kw">${m}</span>`); }
+
+/* ---------- theme ---------- */
+(function(){
+  let saved = null;
+  try { saved = localStorage.getItem("t2s-theme"); } catch(e){}
+  if (saved) document.documentElement.setAttribute("data-theme", saved);
+  $("#themeBtn").onclick = () => {
+    const cur = document.documentElement.getAttribute("data-theme");
+    const dark = cur ? cur === "dark"
+                     : matchMedia("(prefers-color-scheme: dark)").matches;
+    const next = dark ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    try { localStorage.setItem("t2s-theme", next); } catch(e){}
+  };
+})();
+
+/* ---------- tabs ---------- */
+for (const name of ["ask","bench","schema"]) {
+  $("#tab-"+name).onclick = () => {
+    for (const other of ["ask","bench","schema"]) {
+      $("#tab-"+other).setAttribute("aria-selected", String(other===name));
+      $("#panel-"+other).classList.toggle("hidden", other!==name);
+    }
+    if (name === "schema") loadSchema();
+  };
+}
+
+/* ---------- examples ---------- */
+$("#examples").innerHTML = EXAMPLES.map(([tier,q],i)=>
+  `<button class="chip" data-i="${i}"><b>${tier}</b>${esc(q)}</button>`).join("");
+$("#examples").onclick = e => {
+  const b = e.target.closest(".chip"); if (!b) return;
+  $("#q").value = EXAMPLES[+b.dataset.i][1];
+  run();
+};
+
+/* ---------- health ---------- */
+async function health(){
+  try{
+    const r = await fetch("/health"); const h = await r.json();
+    const ok = h.status === "ok";
+    $("#healthPill").textContent = ok ? "database live" : "degraded";
+    $("#healthPill").className = "pill " + (ok ? "live" : "down");
+    $("#modelPill").textContent = h.model_id || "no model";
+    $("#modelPill").title = "schema " + (h.schema_fingerprint||"?") +
+                            " · prompt " + (h.prompt_fingerprint||"?");
+  }catch(e){
+    $("#healthPill").textContent = "unreachable";
+    $("#healthPill").className = "pill down";
+  }
+}
+
+/* ---------- schema ---------- */
+let schemaLoaded = false;
+async function loadSchema(){
+  if (schemaLoaded) return;
+  try{
+    const r = await fetch("/schema"); const s = await r.json();
+    schemaLoaded = true;
+    $("#schemaSub").innerHTML =
+      `${s.tables.length} tables · ${s.characters.toLocaleString()} characters · `+
+      `fingerprint <code>${esc(s.fingerprint)}</code>`;
+    $("#schemaTables").innerHTML =
+      `<div class="chips">${s.tables.map(t=>`<span class="chip"><b>·</b>${esc(t)}</span>`).join("")}</div>`;
+    $("#schemaRaw").textContent = s.schema_text;
+  }catch(e){ $("#schemaSub").textContent = "Could not load the schema."; }
+}
+
+/* ---------- steps ---------- */
+function renderSteps(res){
+  const steps = [];
+  steps.push({s:"ok", what:"Question received", why:"prompt built with the frozen template"});
+  const a0 = res.attempts && res.attempts[0];
+  if (a0){
+    steps.push({s: a0.ok ? "ok" : "bad",
+      what: a0.ok ? "SQL generated, validated and executed"
+                  : "First attempt failed",
+      why: a0.ok ? "single read-only statement over real tables"
+                 : (a0.stage === "static"
+                     ? "rejected before touching the database — " + (a0.error||"")
+                     : "PostgreSQL: " + (a0.error||""))});
+  }
+  const a1 = res.attempts && res.attempts[1];
+  if (a1){
+    steps.push({s: a1.ok ? "ok" : "bad",
+      what: a1.ok ? "Repaired and executed" : "Repair did not fix it",
+      why: a1.ok ? "the database's own error was fed back to the model"
+                 : (a1.error || "still failing")});
+  }
+  if (!res.ok && !a1 && res.attempts && res.attempts.length===1){
+    steps.push({s:"idle", what:"No repair attempted", why:"self-correction is switched off"});
+  }
+  $("#steps").innerHTML = steps.map(x=>`
+    <div class="step">
+      <div class="dot ${x.s}">${x.s==="ok"?"✓":x.s==="bad"?"!":"·"}</div>
+      <div><div class="what">${esc(x.what)}</div><div class="why">${esc(x.why)}</div></div>
+    </div>`).join("");
+}
+
+/* ---------- run ---------- */
+async function run(){
+  const q = $("#q").value.trim();
+  if (!q) { $("#q").focus(); return; }
+  const btn = $("#runBtn");
+  btn.disabled = true; btn.textContent = "Running…";
+  $("#emptyState").classList.add("hidden");
+  $("#errBox").classList.add("hidden");
+  $("#resultSub").textContent = "Generating SQL…";
+  $("#steps").innerHTML = "";
+  $("#sqlWrap").classList.add("hidden");
+  $("#rowsWrap").classList.add("hidden");
+
+  try{
+    const r = await fetch("/query", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({question:q,
+        max_rows: Math.max(1, Math.min(1000, +$("#maxRows").value || 50)),
+        repair: $("#repair").checked})
+    });
+    if (!r.ok){
+      const detail = await r.json().catch(()=>({detail:r.statusText}));
+      throw new Error(detail.detail || ("HTTP " + r.status));
+    }
+    const res = await r.json();
+    renderSteps(res);
+
+    if (res.sql){
+      $("#sqlOut").innerHTML = highlight(res.sql);
+      const t = res.timings || {};
+      $("#metaOut").innerHTML = [
+        ["model", res.model],
+        ["generation", Math.round(t.generation_ms||0) + " ms"],
+        res.repaired ? ["repair", Math.round(t.repair_generation_ms||0)+" ms"] : null,
+        ["execution", Math.round(t.execution_ms||0) + " ms"],
+        ["total", Math.round(t.total_ms||0) + " ms"]
+      ].filter(Boolean).map(([k,v])=>`<span>${k} <b>${esc(v)}</b></span>`).join("");
+      $("#sqlWrap").classList.remove("hidden");
+    }
+
+    if (res.ok){
+      $("#resultSub").textContent = res.repaired
+        ? "Succeeded after one self-correction."
+        : "Executed successfully.";
+      const cols = res.columns || [], rows = res.rows || [];
+      $("#rowsTable").innerHTML =
+        `<tr>${cols.map(c=>`<th>${esc(c)}</th>`).join("")}</tr>` +
+        rows.map(row=>`<tr>${row.map(v=>{
+          const num = v!==null && v!=="" && !isNaN(v);
+          return `<td class="${num?"num":""}">${v===null?"<span class='lab'>NULL</span>":esc(v)}</td>`;
+        }).join("")}</tr>`).join("");
+      $("#rowsMeta").innerHTML =
+        `<span>returned <b>${rows.length}</b> row${rows.length===1?"":"s"}</span>` +
+        (res.truncated ? `<span class="lab">more rows matched than were returned</span>` : "");
+      $("#rowsWrap").classList.remove("hidden");
+      if (!rows.length){
+        $("#rowsTable").innerHTML = `<tr><th>no rows</th></tr>`;
+      }
+    } else {
+      $("#resultSub").textContent = "The generated SQL did not execute.";
+      $("#errBox").textContent =
+        (res.error_stage === "static" ? "Rejected before execution: " : "PostgreSQL: ")
+        + (res.error || "unknown error");
+      $("#errBox").classList.remove("hidden");
+    }
+  }catch(err){
+    $("#resultSub").textContent = "Request failed.";
+    $("#errBox").textContent = err.message;
+    $("#errBox").classList.remove("hidden");
+  }finally{
+    btn.disabled = false; btn.textContent = "Run";
+  }
+}
+$("#runBtn").onclick = run;
+$("#q").addEventListener("keydown", e => {
+  if ((e.metaKey || e.ctrlKey) && e.key === "Enter") run();
+});
+
+health();
+</script>
+</body>
+</html>

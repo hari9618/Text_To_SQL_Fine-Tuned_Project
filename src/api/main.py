@@ -34,10 +34,10 @@ import logging
 import os
 import time
 from contextlib import asynccontextmanager
-from typing import Any
+from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi.responses import FileResponse, JSONResponse
 
 from src.api.backends import build_model
 from src.api.schemas import (
@@ -252,11 +252,22 @@ async def unhandled(request: Request, exc: Exception) -> JSONResponse:
     )
 
 
+STATIC_DIR = Path(__file__).resolve().parent / "static"
+
+
 @app.get("/", include_in_schema=False)
-def root() -> dict[str, Any]:
-    return {
+def root() -> Response:
+    """The demo UI, or a JSON descriptor if the static file is absent.
+
+    Falling back rather than 404-ing matters for the container: the API is
+    useful headless, and a missing `static/` should not take the service down.
+    """
+    index = STATIC_DIR / "index.html"
+    if index.is_file():
+        return FileResponse(index)
+    return JSONResponse({
         "service": "Enterprise Text-to-SQL",
         "docs": "/docs",
         "health": "/health",
         "prompt_version": PROMPT_VERSION,
-    }
+    })
