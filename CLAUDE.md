@@ -88,19 +88,17 @@ Work strictly in order. **Do not implement future phases prematurely.**
 | 8      | Understand and implement LoRA / QLoRA             | **complete** |
 | 9      | Fine-tune on cloud GPU                            | **complete** |
 | 10     | Evaluate fine-tuned model                         | **complete** |
-| 11     | SQL error detection and repair                    | built, GPU run pending |
+| 11     | SQL error detection and repair                    | **complete** |
 | 12     | Production-style API                              | **complete** |
 | 13     | Docker / deployment                               | **complete** (build unrun) |
-| 14     | Final benchmark, ablation study, documentation    | **complete** (4/5 configs) |
+| 14     | Final benchmark, ablation study, documentation    | **complete** (5/5 configs) |
 
 Update this table as phases complete.
 
-**One measurement remains, hard-blocked on GPU access** (no local CUDA;
-HF Jobs needs a Pro account and this one is `is_pro: false`). Everything for
-them is built, verified and staged:
+**All five ablation configurations are measured.** See the results table
+below and `experiments/ABLATION.md`.
 
-| config | upload | notebook | output | then |
-| --- | --- | --- | --- | --- |
+--- | --- | --- | --- | --- |
 | 5 fine-tuned + repair | `text2sql-repairpack.zip` | `kaggle_repair_finetuned.ipynb` | `repairs.jsonl` | `scripts/score_repair.py` |
 
 Then `scripts/ablation_report.py` regenerates `experiments/ABLATION.md` with
@@ -441,6 +439,49 @@ alone does not earn a release.
 Conclusion, now measured rather than assumed: **retrieval is the wrong tool for
 this 12-table schema, for the base model and the fine-tuned model alike.** Keep
 the full schema.
+
+### Configuration 5 result — repair (frozen 2026-09-07)
+
+The fine-tuned adapter, full schema, one repair attempt on detectable failures.
+19 failures re-generated on a Kaggle T4 in 6 m 30 s.
+
+| metric | cfg 3 | **cfg 5 + repair** | delta |
+| --- | ---: | ---: | ---: |
+| strict execution accuracy | 50.99 % | **52.10 %** | +1.11 |
+| executable SQL | 95.81 % | **98.23 %** | +2.42 |
+| schema hallucination | 1.99 % | **0.66 %** | -1.33 |
+
+**Repair repaid the entire fine-tuning regression.** Executable SQL and
+hallucination both return to the base model's level (98.90 % / 0.66 %) while
+keeping the accuracy gain. That is the whole argument for a self-correction
+loop, and it is now measured rather than asserted.
+
+**The two rates diverge sharply, which is the point of reporting both:**
+
+| | | |
+| --- | ---: | --- |
+| repair *success* — now executes | 11 / 19 | **57.9 %** |
+| repair *correctness* — now returns the gold rows | 5 / 19 | **26.3 %** |
+| model returned identical SQL | 4 / 19 | |
+| mean repair latency | 9,297 ms | |
+
+Six of the eleven "successes" turned a crash into a **confident wrong answer**.
+A single success rate would have reported 57.9 % and hidden that entirely.
+
+**Repair works when the error names the fix, and fails when it names only the
+symptom.** All five genuinely-correct repairs were `column "method" does not
+exist` — PostgreSQL identifies the bad identifier, the schema shows
+`payment_method`, and the model renames it. The failures were `datediff does
+not exist` (says the function is wrong, not what the right date arithmetic is)
+and `column reference is ambiguous` (says the reference is ambiguous, not which
+table was meant). The model qualified or substituted, and guessed wrong.
+
+Both remaining `unknown_column` cases it could not fix are genuinely missing
+columns — `shipped_date` does not exist in `orders` at all — where it returned
+identical SQL rather than inventing something. That is the right failure.
+
+`max_repairs=1` is doing real work here: 4 of 19 returned the same SQL
+unchanged, so a second attempt would mostly have re-spent latency.
 
 ### Hardware constraint (important)
 

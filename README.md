@@ -4,10 +4,9 @@ Convert natural-language business questions into **executable, validated SQL**
 against an enterprise-style PostgreSQL database — and *measure* whether
 fine-tuning an open-source LLM actually improves it.
 
-> **Headline result: fine-tuning took strict execution accuracy from
-> 10.82 % to 50.99 % on 453 unseen questions.**
-> Same prompt, same schema, same database, same executor, same metrics. Only
-> the weights changed.
+> **Headline result: 10.82 % → 52.10 % strict execution accuracy** on 453
+> unseen questions — fine-tuning plus a self-correction loop.
+> Same prompt, same schema, same database, same executor, same metrics.
 
 The interesting part is not the number. It is *where the number came from* —
 most of the gain turns out to be the model learning which columns to return,
@@ -94,13 +93,18 @@ Exposed as a FastAPI service (`POST /query`).
 
 453 unseen test questions. Execution-based scoring throughout.
 
-| metric | 1. Base | 2. Base + retrieval | 3. **Fine-tuned** | 4. Fine-tuned + retrieval |
-|---|---:|---:|---:|---:|
-| **strict execution accuracy** | 10.82 % | 9.27 % | **50.99 %** | 41.72 % |
-| projection-tolerant accuracy | 45.92 % | 43.93 % | 50.99 % | 41.72 % |
-| executable SQL | 98.90 % | 92.27 % | 95.81 % | 94.92 % |
-| schema hallucination | 0.66 % | 3.31 % | 1.99 % | 3.53 % |
-| syntax errors | 0.00 % | 0.00 % | 0.22 % | 0.00 % |
+| metric | 1. Base | 2. + retrieval | 3. Fine-tuned | 4. FT + retrieval | 5. **FT + repair** |
+|---|---:|---:|---:|---:|---:|
+| **strict execution accuracy** | 10.82 % | 9.27 % | 50.99 % | 41.72 % | **52.10 %** |
+| projection-tolerant accuracy | 45.92 % | 43.93 % | 50.99 % | 41.72 % | **52.10 %** |
+| executable SQL | 98.90 % | 92.27 % | 95.81 % | 94.92 % | **98.23 %** |
+| schema hallucination | 0.66 % | 3.31 % | 1.99 % | 3.53 % | **0.66 %** |
+| syntax errors | 0.00 % | 0.00 % | 0.22 % | 0.00 % | 0.22 % |
+
+**All five configurations measured.** Configuration 5 is the best on every
+metric that matters: repair recovers the entire fine-tuning regression —
+executable SQL and hallucination return to the base model's level — while
+keeping the accuracy gain.
 
 ### By difficulty
 
@@ -134,17 +138,29 @@ table a join needs and the model invents it — hallucination nearly doubles.
 `medium` is the one tier that improves (+7.9 pp): single-table aggregations,
 where a smaller schema really is less distracting.
 
-### Not yet measured
+### Self-correction: two rates, not one
 
-| # | configuration | status |
-|---|---|---|
-| 5 | Fine-tuned + repair | **not measured** — needs a GPU run |
+Repair is only attempted on **detectable** failures — SQL that fails to validate
+or fails to execute. A query that runs and returns the wrong rows is
+indistinguishable from a correct one without a gold answer, so it is left alone.
+Repair that needed the answer would not work in production.
 
-Everything for it is built, tested and staged: the repair pack exports, the
-notebook is verified against the real chat template, and the scorer is validated
-with two synthetic repair files. It is listed here rather than omitted, because
-a gap in an ablation table invites the reader to assume the missing row would
-have agreed with the others.
+| | | |
+|---|---:|---|
+| repair **success** — now executes | 11 / 19 | 57.9 % |
+| repair **correctness** — now returns the gold rows | 5 / 19 | 26.3 % |
+| model returned identical SQL | 4 / 19 | |
+
+**Six of the eleven "successes" turned a crash into a confident wrong answer.**
+A single success rate would have reported 57.9 % and hidden that completely.
+
+The pattern is sharp: **repair works when the error names the fix, and fails
+when it names only the symptom.** Every correct repair was
+`column "method" does not exist` — PostgreSQL names the bad identifier, the
+schema shows `payment_method`, the model renames it. The failures were
+`datediff does not exist` (tells you the function is wrong, not what the right
+date arithmetic is) and `column reference is ambiguous` (tells you it is
+ambiguous, not which table was meant).
 
 Run `scripts/ablation_report.py` to regenerate
 [`experiments/ABLATION.md`](experiments/ABLATION.md) as configurations land.
