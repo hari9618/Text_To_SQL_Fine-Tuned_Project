@@ -43,7 +43,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.evaluation.baseline import dataset_fingerprint  # noqa: E402
-from src.model.prompt import PROMPT_VERSION, prompt_fingerprint  # noqa: E402
+from src.benchmark_versions import add_version_argument, get as get_version  # noqa: E402
 from src.model.schema_context import build_schema_context  # noqa: E402
 from src.sql.config import PROJECT_ROOT, ConfigError, app_config  # noqa: E402
 from src.sql.executor import read_only_connection  # noqa: E402
@@ -53,9 +53,6 @@ from src.sql.executor import read_only_connection  # noqa: E402
 EXPECTED_PROMPT_FP = "8288e41a496531a9"
 EXPECTED_SCHEMA_FP = "d03619e711661bc5"
 
-TEST_SET = PROJECT_ROOT / "dataset" / "test" / "test.jsonl"
-PROMPT_SRC = PROJECT_ROOT / "src" / "model" / "prompt.py"
-OUT_DIR = PROJECT_ROOT / "experiments" / "finetuned" / "evalpack"
 
 
 def sha16(text: str) -> str:
@@ -64,6 +61,7 @@ def sha16(text: str) -> str:
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Phase 10 eval pack export")
+    add_version_argument(p)
     p.add_argument("--retrieval", choices=["none", "keyword"], default="none",
                    help="'none' ships the full schema (ablation configuration "
                         "3); 'keyword' ships a retrieved subset per question "
@@ -77,8 +75,36 @@ def parse_args() -> argparse.Namespace:
     return p.parse_args()
 
 
+def baseline_to_beat(version) -> dict:
+    """The base-model numbers on this benchmark version, for the notebook's
+    display only. v1 is the frozen Phase 5 baseline; later versions read
+    their own base-model summary if it has been measured."""
+    if version.is_v1:
+        return {"strict_execution_accuracy_pct": 10.82,
+                "projection_tolerant_accuracy_pct": 45.92,
+                "executable_sql_pct": 98.90, "schema_hallucination_pct": 0.66}
+    summary = version.experiments_root / "baseline" / "summary.json"
+    if not summary.exists():
+        return {"note": "base model not yet measured on this benchmark version"}
+    s = json.loads(summary.read_text(encoding="utf-8"))
+    return {"strict_execution_accuracy_pct": s["totals"]["execution_accuracy_pct"],
+            "projection_tolerant_accuracy_pct":
+                s["projection_analysis"]["projection_tolerant_accuracy_pct"],
+            "executable_sql_pct": s["totals"]["executable_sql_pct"],
+            "schema_hallucination_pct": s["error_rates"]["schema_hallucination_pct"]}
+
+
 def main() -> int:
     args = parse_args()
+    version = get_version(args.version)
+    prompt = version.prompt()
+    PROMPT_VERSION, prompt_fingerprint = prompt.PROMPT_VERSION, prompt.prompt_fingerprint
+    TEST_SET = version.split("test")
+    PROMPT_SRC = PROJECT_ROOT / (version.prompt_module.replace(".", "/") + ".py")
+    OUT_DIR = version.experiments_root / "finetuned" / "evalpack"
+    # v1 must ship the frozen baseline prompt; v2 ships its own module, whose
+    # fingerprint the notebook recomputes and checks against the manifest.
+    expected_prompt_fp = EXPECTED_PROMPT_FP if version.is_v1 else prompt_fingerprint()
 
     if not TEST_SET.exists():
         print(f"[error] test split not found: {TEST_SET}", file=sys.stderr)
@@ -96,13 +122,14 @@ def main() -> int:
 
     # ---- prompt -----------------------------------------------------------
     prompt_fp = prompt_fingerprint()
-    if prompt_fp != EXPECTED_PROMPT_FP:
+    if prompt_fp != expected_prompt_fp:
         print(f"[abort] prompt fingerprint drifted: {prompt_fp} "
               f"!= {EXPECTED_PROMPT_FP}\n"
               f"        The frozen baseline used {EXPECTED_PROMPT_FP}. Comparing "
               f"against it now would measure the prompt change, not the "
               f"fine-tune.", file=sys.stderr)
         return 2
+    print(f"benchmark       : {version.name}")
     print(f"prompt          : {PROMPT_VERSION}  {prompt_fp}  OK")
 
     # ---- schema, rendered from the live database --------------------------
@@ -195,6 +222,7 @@ def main() -> int:
 
     manifest = {
         "phase": 10,
+        "benchmark_version": version.name,
         "purpose": "inputs for remote generation; scoring happens locally",
         "prompt": {"version": PROMPT_VERSION, "fingerprint": prompt_fp},
         "schema": {
@@ -208,16 +236,11 @@ def main() -> int:
         "questions": {
             "count": len(questions),
             "fingerprint": questions_fp,
-            "source": "dataset/test/test.jsonl",
+            "source": str(TEST_SET.relative_to(PROJECT_ROOT)).replace(chr(92), "/"),
             "source_fingerprint": dataset_fingerprint(TEST_SET),
             "gold_sql_included": False,
         },
-        "baseline_to_beat": {
-            "strict_execution_accuracy_pct": 10.82,
-            "projection_tolerant_accuracy_pct": 45.92,
-            "executable_sql_pct": 98.90,
-            "schema_hallucination_pct": 0.66,
-        },
+        "baseline_to_beat": baseline_to_beat(version),
     }
     (out_dir / "manifest.json").write_text(
         json.dumps(manifest, indent=2), encoding="utf-8")
@@ -225,6 +248,8 @@ def main() -> int:
     # ---- zip for upload ---------------------------------------------------
     default_zip = ("text2sql-evalpack.zip" if args.retrieval == "none"
                    else "text2sql-evalpack-retrieved.zip")
+    if not version.is_v1:
+        default_zip = default_zip.replace(".zip", f"-{version.name}.zip")
     zip_path = Path(args.zip_to or (Path.home() / "Downloads" / default_zip))
     zip_path.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:

@@ -1,0 +1,453 @@
+{"id": "bench-000322", "question": "Show orders placed in 2023."}
+{"id": "bench-000323", "question": "List all orders from the year 2023."}
+{"id": "bench-000324", "question": "Which orders were made during 2023?"}
+{"id": "bench-000325", "question": "Show orders placed in 2026."}
+{"id": "bench-000326", "question": "List all orders from the year 2026."}
+{"id": "bench-000327", "question": "Which orders were made during 2026?"}
+{"id": "bench-000328", "question": "Show orders placed in 2025."}
+{"id": "bench-000329", "question": "List all orders from the year 2025."}
+{"id": "bench-000330", "question": "Which orders were made during 2025?"}
+{"id": "bench-000331", "question": "Show orders placed in 2022."}
+{"id": "bench-000332", "question": "List all orders from the year 2022."}
+{"id": "bench-000333", "question": "Which orders were made during 2022?"}
+{"id": "bench-000334", "question": "Show orders placed in 2024."}
+{"id": "bench-000335", "question": "List all orders from the year 2024."}
+{"id": "bench-000336", "question": "Which orders were made during 2024?"}
+{"id": "bench-000337", "question": "Show orders placed in 2020."}
+{"id": "bench-000338", "question": "List all orders from the year 2020."}
+{"id": "bench-000339", "question": "Which orders were made during 2020?"}
+{"id": "bench-000340", "question": "Show orders placed in 2021."}
+{"id": "bench-000341", "question": "List all orders from the year 2021."}
+{"id": "bench-000342", "question": "Which orders were made during 2021?"}
+{"id": "bench-000343", "question": "Show orders placed in 2019."}
+{"id": "bench-000344", "question": "List all orders from the year 2019."}
+{"id": "bench-000345", "question": "Which orders were made during 2019?"}
+{"id": "bench-000562", "question": "Show shipments handled by AeroCargo."}
+{"id": "bench-000563", "question": "List the shipments carried by AeroCargo."}
+{"id": "bench-000564", "question": "Which shipments went through AeroCargo?"}
+{"id": "bench-000565", "question": "Show shipments handled by GlobalEx."}
+{"id": "bench-000566", "question": "List the shipments carried by GlobalEx."}
+{"id": "bench-000567", "question": "Which shipments went through GlobalEx?"}
+{"id": "bench-000568", "question": "Show shipments handled by SwiftFreight."}
+{"id": "bench-000569", "question": "List the shipments carried by SwiftFreight."}
+{"id": "bench-000570", "question": "Which shipments went through SwiftFreight?"}
+{"id": "bench-000571", "question": "Show shipments handled by BluePort."}
+{"id": "bench-000572", "question": "List the shipments carried by BluePort."}
+{"id": "bench-000573", "question": "Which shipments went through BluePort?"}
+{"id": "bench-000574", "question": "Show shipments handled by RegionalPost."}
+{"id": "bench-000575", "question": "List the shipments carried by RegionalPost."}
+{"id": "bench-000576", "question": "Which shipments went through RegionalPost?"}
+{"id": "bench-000652", "question": "How many orders are there in each status?"}
+{"id": "bench-000653", "question": "Count orders by status."}
+{"id": "bench-000654", "question": "Show the number of orders per status."}
+{"id": "bench-000664", "question": "What is the total revenue for each year?"}
+{"id": "bench-000665", "question": "Show yearly revenue totals."}
+{"id": "bench-000666", "question": "Break down total order value by year."}
+{"id": "bench-000667", "question": "How many orders were placed each month of 2025?"}
+{"id": "bench-000668", "question": "Show the monthly order count for 2025."}
+{"id": "bench-000669", "question": "Count orders by month in 2025."}
+{"id": "bench-000670", "question": "How many orders were placed each month of 2022?"}
+{"id": "bench-000671", "question": "Show the monthly order count for 2022."}
+{"id": "bench-000672", "question": "Count orders by month in 2022."}
+{"id": "bench-000673", "question": "How many orders were placed each month of 2019?"}
+{"id": "bench-000674", "question": "Show the monthly order count for 2019."}
+{"id": "bench-000675", "question": "Count orders by month in 2019."}
+{"id": "bench-000676", "question": "How many orders were placed each month of 2026?"}
+{"id": "bench-000677", "question": "Show the monthly order count for 2026."}
+{"id": "bench-000678", "question": "Count orders by month in 2026."}
+{"id": "bench-000679", "question": "How many orders were placed each month of 2024?"}
+{"id": "bench-000680", "question": "Show the monthly order count for 2024."}
+{"id": "bench-000681", "question": "Count orders by month in 2024."}
+{"id": "bench-000682", "question": "How many orders were placed each month of 2023?"}
+{"id": "bench-000683", "question": "Show the monthly order count for 2023."}
+{"id": "bench-000684", "question": "Count orders by month in 2023."}
+{"id": "bench-000685", "question": "How many orders were placed each month of 2021?"}
+{"id": "bench-000686", "question": "Show the monthly order count for 2021."}
+{"id": "bench-000687", "question": "Count orders by month in 2021."}
+{"id": "bench-000688", "question": "How many orders were placed each month of 2020?"}
+{"id": "bench-000689", "question": "Show the monthly order count for 2020."}
+{"id": "bench-000690", "question": "Count orders by month in 2020."}
+{"id": "bench-000790", "question": "What is the average product price in each category?"}
+{"id": "bench-000791", "question": "Show mean unit price by category id."}
+{"id": "bench-000792", "question": "Calculate average price per category."}
+{"id": "bench-000799", "question": "What is the average salary for each job title?"}
+{"id": "bench-000800", "question": "Show mean pay by job title."}
+{"id": "bench-000801", "question": "Calculate the average salary per role."}
+{"id": "bench-000808", "question": "How many payments are there in each status?"}
+{"id": "bench-000809", "question": "Count payments by status."}
+{"id": "bench-000810", "question": "Show the breakdown of payment statuses."}
+{"id": "bench-000877", "question": "Who are the top 15 customers by revenue?"}
+{"id": "bench-000878", "question": "Show the 15 highest spending customers."}
+{"id": "bench-000879", "question": "List our 15 biggest customers by total sales value."}
+{"id": "bench-000880", "question": "Who are the top 5 customers by revenue?"}
+{"id": "bench-000881", "question": "Show the 5 highest spending customers."}
+{"id": "bench-000882", "question": "List our 5 biggest customers by total sales value."}
+{"id": "bench-000883", "question": "Who are the top 30 customers by revenue?"}
+{"id": "bench-000884", "question": "Show the 30 highest spending customers."}
+{"id": "bench-000885", "question": "List our 30 biggest customers by total sales value."}
+{"id": "bench-000886", "question": "Who are the top 100 customers by revenue?"}
+{"id": "bench-000887", "question": "Show the 100 highest spending customers."}
+{"id": "bench-000888", "question": "List our 100 biggest customers by total sales value."}
+{"id": "bench-000889", "question": "Who are the top 20 customers by revenue?"}
+{"id": "bench-000890", "question": "Show the 20 highest spending customers."}
+{"id": "bench-000891", "question": "List our 20 biggest customers by total sales value."}
+{"id": "bench-000892", "question": "Who are the top 10 customers by revenue?"}
+{"id": "bench-000893", "question": "Show the 10 highest spending customers."}
+{"id": "bench-000894", "question": "List our 10 biggest customers by total sales value."}
+{"id": "bench-000895", "question": "Who are the top 8 customers by revenue?"}
+{"id": "bench-000896", "question": "Show the 8 highest spending customers."}
+{"id": "bench-000897", "question": "List our 8 biggest customers by total sales value."}
+{"id": "bench-000898", "question": "Who are the top 50 customers by revenue?"}
+{"id": "bench-000899", "question": "Show the 50 highest spending customers."}
+{"id": "bench-000900", "question": "List our 50 biggest customers by total sales value."}
+{"id": "bench-000901", "question": "Who are the top 12 customers by revenue?"}
+{"id": "bench-000902", "question": "Show the 12 highest spending customers."}
+{"id": "bench-000903", "question": "List our 12 biggest customers by total sales value."}
+{"id": "bench-000904", "question": "Who are the top 3 customers by revenue?"}
+{"id": "bench-000905", "question": "Show the 3 highest spending customers."}
+{"id": "bench-000906", "question": "List our 3 biggest customers by total sales value."}
+{"id": "bench-000907", "question": "Who are the top 25 customers by revenue?"}
+{"id": "bench-000908", "question": "Show the 25 highest spending customers."}
+{"id": "bench-000909", "question": "List our 25 biggest customers by total sales value."}
+{"id": "bench-001033", "question": "How many products does each supplier provide?"}
+{"id": "bench-001034", "question": "Count products per supplier, showing the supplier name."}
+{"id": "bench-001035", "question": "Show suppliers with their product counts."}
+{"id": "bench-001042", "question": "Show each employee alongside their manager's name."}
+{"id": "bench-001043", "question": "List employees with the name of the person they report to."}
+{"id": "bench-001044", "question": "Who manages each employee?"}
+{"id": "bench-001192", "question": "Which products have never been ordered?"}
+{"id": "bench-001193", "question": "Show products that have never appeared in an order."}
+{"id": "bench-001194", "question": "List items with no sales at all."}
+{"id": "bench-001195", "question": "Which customers spent more than the average customer?"}
+{"id": "bench-001196", "question": "Show customers whose total spending is above average."}
+{"id": "bench-001197", "question": "List above-average spenders."}
+{"id": "bench-001525", "question": "How many shipments does each warehouse send?"}
+{"id": "bench-001526", "question": "Show shipment counts per warehouse name."}
+{"id": "bench-001527", "question": "Which warehouses dispatch the most shipments?"}
+{"id": "bench-001528", "question": "Which products are stored in the Marseille warehouses?"}
+{"id": "bench-001529", "question": "Show items stocked in warehouses located in Marseille."}
+{"id": "bench-001530", "question": "List products held at Marseille."}
+{"id": "bench-001531", "question": "Which products are stored in the Rotterdam warehouses?"}
+{"id": "bench-001532", "question": "Show items stocked in warehouses located in Rotterdam."}
+{"id": "bench-001533", "question": "List products held at Rotterdam."}
+{"id": "bench-001534", "question": "Which products are stored in the Hyderabad warehouses?"}
+{"id": "bench-001535", "question": "Show items stocked in warehouses located in Hyderabad."}
+{"id": "bench-001536", "question": "List products held at Hyderabad."}
+{"id": "bench-001537", "question": "Which products are stored in the Sao Paulo warehouses?"}
+{"id": "bench-001538", "question": "Show items stocked in warehouses located in Sao Paulo."}
+{"id": "bench-001539", "question": "List products held at Sao Paulo."}
+{"id": "bench-001540", "question": "Which products are stored in the Singapore warehouses?"}
+{"id": "bench-001541", "question": "Show items stocked in warehouses located in Singapore."}
+{"id": "bench-001542", "question": "List products held at Singapore."}
+{"id": "bench-001543", "question": "Which products are stored in the Belo Horizonte warehouses?"}
+{"id": "bench-001544", "question": "Show items stocked in warehouses located in Belo Horizonte."}
+{"id": "bench-001545", "question": "List products held at Belo Horizonte."}
+{"id": "bench-001546", "question": "Which products are stored in the Chicago warehouses?"}
+{"id": "bench-001547", "question": "Show items stocked in warehouses located in Chicago."}
+{"id": "bench-001548", "question": "List products held at Chicago."}
+{"id": "bench-001549", "question": "Which products are stored in the Osaka warehouses?"}
+{"id": "bench-001550", "question": "Show items stocked in warehouses located in Osaka."}
+{"id": "bench-001551", "question": "List products held at Osaka."}
+{"id": "bench-001552", "question": "Which products are stored in the Melbourne warehouses?"}
+{"id": "bench-001553", "question": "Show items stocked in warehouses located in Melbourne."}
+{"id": "bench-001554", "question": "List products held at Melbourne."}
+{"id": "bench-001555", "question": "Which products are stored in the Rio de Janeiro warehouses?"}
+{"id": "bench-001556", "question": "Show items stocked in warehouses located in Rio de Janeiro."}
+{"id": "bench-001557", "question": "List products held at Rio de Janeiro."}
+{"id": "bench-001558", "question": "Which products are stored in the Pune warehouses?"}
+{"id": "bench-001559", "question": "Show items stocked in warehouses located in Pune."}
+{"id": "bench-001560", "question": "List products held at Pune."}
+{"id": "bench-001648", "question": "Show the top 2 products by revenue within each category."}
+{"id": "bench-001649", "question": "For every category, list its 2 best selling products."}
+{"id": "bench-001650", "question": "What are the 2 highest earning products per category?"}
+{"id": "bench-001651", "question": "Show the top 3 products by revenue within each category."}
+{"id": "bench-001652", "question": "For every category, list its 3 best selling products."}
+{"id": "bench-001653", "question": "What are the 3 highest earning products per category?"}
+{"id": "bench-001654", "question": "Show the top 5 products by revenue within each category."}
+{"id": "bench-001655", "question": "For every category, list its 5 best selling products."}
+{"id": "bench-001656", "question": "What are the 5 highest earning products per category?"}
+{"id": "bench-001657", "question": "Show the top 4 products by revenue within each category."}
+{"id": "bench-001658", "question": "For every category, list its 4 best selling products."}
+{"id": "bench-001659", "question": "What are the 4 highest earning products per category?"}
+{"id": "bench-001717", "question": "Which carrier delivers fastest on average?"}
+{"id": "bench-001718", "question": "Show mean delivery days per carrier."}
+{"id": "bench-001719", "question": "Compare carriers by average delivery time."}
+{"id": "bench-001783", "question": "Show the reporting depth of every employee in the org chart."}
+{"id": "bench-001784", "question": "How many levels below the CEO is each employee?"}
+{"id": "bench-001785", "question": "Produce the organisational hierarchy with depth levels."}
+{"id": "bench-001795", "question": "Which orders were shipped after their required date?"}
+{"id": "bench-001796", "question": "Show late shipments compared to the required date."}
+{"id": "bench-001797", "question": "List orders that missed their required delivery date."}
+{"id": "bench-001798", "question": "Show each customer's first order date and their total order count."}
+{"id": "bench-001799", "question": "When did each customer first order, and how many have they placed?"}
+{"id": "bench-001800", "question": "List first order date per customer with their order volume."}
+{"id": "bench-001807", "question": "What is our actual revenue, excluding cancelled and returned orders?"}
+{"id": "bench-001808", "question": "Show real revenue after removing cancellations and returns."}
+{"id": "bench-001809", "question": "Calculate net revenue, ignoring cancelled and returned orders."}
+{"id": "bench-001810", "question": "Which orders have no sales representative assigned?"}
+{"id": "bench-001811", "question": "Show self-service orders with no rep."}
+{"id": "bench-001812", "question": "List orders where no employee handled the sale."}
+{"id": "bench-001816", "question": "Which products have no supplier on record?"}
+{"id": "bench-001817", "question": "Show items where the supplier is unknown."}
+{"id": "bench-001818", "question": "List products missing supplier information."}
+{"id": "bench-001819", "question": "Show suppliers that have not been rated yet."}
+{"id": "bench-001820", "question": "Which suppliers are missing a quality rating?"}
+{"id": "bench-001821", "question": "List unrated suppliers."}
+{"id": "bench-001822", "question": "Which business customers have a credit limit below 349000?"}
+{"id": "bench-001823", "question": "Show business accounts with credit limits under 349000."}
+{"id": "bench-001824", "question": "List business customers whose credit limit is less than 349000."}
+{"id": "bench-001825", "question": "Which business customers have a credit limit below 55000?"}
+{"id": "bench-001826", "question": "Show business accounts with credit limits under 55000."}
+{"id": "bench-001827", "question": "List business customers whose credit limit is less than 55000."}
+{"id": "bench-001828", "question": "Which business customers have a credit limit below 151000?"}
+{"id": "bench-001829", "question": "Show business accounts with credit limits under 151000."}
+{"id": "bench-001830", "question": "List business customers whose credit limit is less than 151000."}
+{"id": "bench-001831", "question": "Which business customers have a credit limit below 453000?"}
+{"id": "bench-001832", "question": "Show business accounts with credit limits under 453000."}
+{"id": "bench-001833", "question": "List business customers whose credit limit is less than 453000."}
+{"id": "bench-001834", "question": "Which business customers have a credit limit below 302000?"}
+{"id": "bench-001835", "question": "Show business accounts with credit limits under 302000."}
+{"id": "bench-001836", "question": "List business customers whose credit limit is less than 302000."}
+{"id": "bench-001837", "question": "Which business customers have a credit limit below 401000?"}
+{"id": "bench-001838", "question": "Show business accounts with credit limits under 401000."}
+{"id": "bench-001839", "question": "List business customers whose credit limit is less than 401000."}
+{"id": "bench-001840", "question": "Which business customers have a credit limit below 101800?"}
+{"id": "bench-001841", "question": "Show business accounts with credit limits under 101800."}
+{"id": "bench-001842", "question": "List business customers whose credit limit is less than 101800."}
+{"id": "bench-001843", "question": "Which business customers have a credit limit below 197000?"}
+{"id": "bench-001844", "question": "Show business accounts with credit limits under 197000."}
+{"id": "bench-001845", "question": "List business customers whose credit limit is less than 197000."}
+{"id": "bench-001846", "question": "Which business customers have a credit limit below 247000?"}
+{"id": "bench-001847", "question": "Show business accounts with credit limits under 247000."}
+{"id": "bench-001848", "question": "List business customers whose credit limit is less than 247000."}
+{"id": "bench-001849", "question": "Which orders have shipped but not yet been delivered?"}
+{"id": "bench-001850", "question": "Show shipments still in transit."}
+{"id": "bench-001851", "question": "List consignments that left the warehouse but have not arrived."}
+{"id": "bench-001852", "question": "Which products are below their reorder level in any warehouse?"}
+{"id": "bench-001853", "question": "Show stock that needs reordering."}
+{"id": "bench-001854", "question": "List items whose quantity has fallen under the reorder threshold."}
+{"id": "bench-001858", "question": "Which orders are still awaiting payment?"}
+{"id": "bench-001859", "question": "Show unpaid orders that were not cancelled."}
+{"id": "bench-001860", "question": "List orders with no completed payment against them."}
+{"id": "bench-002227", "question": "Which customers have not ordered in the last 26 months?"}
+{"id": "bench-002228", "question": "Show customers with no orders in the last 26 months."}
+{"id": "bench-002229", "question": "List churned customers with no order in 26 months."}
+{"id": "bench-002230", "question": "Which customers have not ordered in the last 6 months?"}
+{"id": "bench-002231", "question": "Show customers with no orders in the last 6 months."}
+{"id": "bench-002232", "question": "List churned customers with no order in 6 months."}
+{"id": "bench-002233", "question": "Which customers have not ordered in the last 5 months?"}
+{"id": "bench-002234", "question": "Show customers with no orders in the last 5 months."}
+{"id": "bench-002235", "question": "List churned customers with no order in 5 months."}
+{"id": "bench-002236", "question": "Which customers have not ordered in the last 9 months?"}
+{"id": "bench-002237", "question": "Show customers with no orders in the last 9 months."}
+{"id": "bench-002238", "question": "List churned customers with no order in 9 months."}
+{"id": "bench-002239", "question": "Which customers have not ordered in the last 3 months?"}
+{"id": "bench-002240", "question": "Show customers with no orders in the last 3 months."}
+{"id": "bench-002241", "question": "List churned customers with no order in 3 months."}
+{"id": "bench-002242", "question": "Which customers have not ordered in the last 17 months?"}
+{"id": "bench-002243", "question": "Show customers with no orders in the last 17 months."}
+{"id": "bench-002244", "question": "List churned customers with no order in 17 months."}
+{"id": "bench-002245", "question": "Which customers have not ordered in the last 2 months?"}
+{"id": "bench-002246", "question": "Show customers with no orders in the last 2 months."}
+{"id": "bench-002247", "question": "List churned customers with no order in 2 months."}
+{"id": "bench-002248", "question": "Which customers have not ordered in the last 12 months?"}
+{"id": "bench-002249", "question": "Show customers with no orders in the last 12 months."}
+{"id": "bench-002250", "question": "List churned customers with no order in 12 months."}
+{"id": "bench-002251", "question": "How full is each warehouse relative to its capacity?"}
+{"id": "bench-002252", "question": "Show warehouse utilisation as a percentage of capacity."}
+{"id": "bench-002253", "question": "Compare stock held against capacity for each warehouse."}
+{"id": "bench-002263", "question": "What proportion of order value has actually been collected?"}
+{"id": "bench-002264", "question": "Show collected payments against total order value."}
+{"id": "bench-002265", "question": "How much of what we billed has been paid?"}
+{"id": "bench-002269", "question": "Show payments larger than 3528 dollars."}
+{"id": "bench-002270", "question": "List payments above 3528."}
+{"id": "bench-002271", "question": "Which payments exceeded 3528?"}
+{"id": "bench-002272", "question": "Show payments larger than 5274 dollars."}
+{"id": "bench-002273", "question": "List payments above 5274."}
+{"id": "bench-002274", "question": "Which payments exceeded 5274?"}
+{"id": "bench-002275", "question": "Show payments larger than 1072 dollars."}
+{"id": "bench-002276", "question": "List payments above 1072."}
+{"id": "bench-002277", "question": "Which payments exceeded 1072?"}
+{"id": "bench-002278", "question": "Show payments larger than 121 dollars."}
+{"id": "bench-002279", "question": "List payments above 121."}
+{"id": "bench-002280", "question": "Which payments exceeded 121?"}
+{"id": "bench-002281", "question": "Show payments larger than 2455 dollars."}
+{"id": "bench-002282", "question": "List payments above 2455."}
+{"id": "bench-002283", "question": "Which payments exceeded 2455?"}
+{"id": "bench-002284", "question": "Show payments larger than 1678 dollars."}
+{"id": "bench-002285", "question": "List payments above 1678."}
+{"id": "bench-002286", "question": "Which payments exceeded 1678?"}
+{"id": "bench-002287", "question": "Show payments larger than 621 dollars."}
+{"id": "bench-002288", "question": "List payments above 621."}
+{"id": "bench-002289", "question": "Which payments exceeded 621?"}
+{"id": "bench-002290", "question": "Show payments larger than 314 dollars."}
+{"id": "bench-002291", "question": "List payments above 314."}
+{"id": "bench-002292", "question": "Which payments exceeded 314?"}
+{"id": "bench-002293", "question": "Show payments larger than 8503 dollars."}
+{"id": "bench-002294", "question": "List payments above 8503."}
+{"id": "bench-002295", "question": "Which payments exceeded 8503?"}
+{"id": "bench-002320", "question": "Show payments with status completed."}
+{"id": "bench-002321", "question": "List all completed payments."}
+{"id": "bench-002322", "question": "Which payments are marked completed?"}
+{"id": "bench-002323", "question": "Show payments with status failed."}
+{"id": "bench-002324", "question": "List all failed payments."}
+{"id": "bench-002325", "question": "Which payments are marked failed?"}
+{"id": "bench-002326", "question": "Show payments with status refunded."}
+{"id": "bench-002327", "question": "List all refunded payments."}
+{"id": "bench-002328", "question": "Which payments are marked refunded?"}
+{"id": "bench-002329", "question": "Show shipments dispatched in 2019."}
+{"id": "bench-002330", "question": "List shipments that left in 2019."}
+{"id": "bench-002331", "question": "Which consignments shipped during 2019?"}
+{"id": "bench-002332", "question": "Show shipments dispatched in 2024."}
+{"id": "bench-002333", "question": "List shipments that left in 2024."}
+{"id": "bench-002334", "question": "Which consignments shipped during 2024?"}
+{"id": "bench-002335", "question": "Show shipments dispatched in 2020."}
+{"id": "bench-002336", "question": "List shipments that left in 2020."}
+{"id": "bench-002337", "question": "Which consignments shipped during 2020?"}
+{"id": "bench-002338", "question": "Show shipments dispatched in 2025."}
+{"id": "bench-002339", "question": "List shipments that left in 2025."}
+{"id": "bench-002340", "question": "Which consignments shipped during 2025?"}
+{"id": "bench-002341", "question": "Show shipments dispatched in 2021."}
+{"id": "bench-002342", "question": "List shipments that left in 2021."}
+{"id": "bench-002343", "question": "Which consignments shipped during 2021?"}
+{"id": "bench-002344", "question": "Show shipments dispatched in 2022."}
+{"id": "bench-002345", "question": "List shipments that left in 2022."}
+{"id": "bench-002346", "question": "Which consignments shipped during 2022?"}
+{"id": "bench-002347", "question": "Show shipments dispatched in 2026."}
+{"id": "bench-002348", "question": "List shipments that left in 2026."}
+{"id": "bench-002349", "question": "Which consignments shipped during 2026?"}
+{"id": "bench-002350", "question": "Show shipments dispatched in 2023."}
+{"id": "bench-002351", "question": "List shipments that left in 2023."}
+{"id": "bench-002352", "question": "Which consignments shipped during 2023?"}
+{"id": "bench-002458", "question": "Show inventory rows with fewer than 360 units in stock."}
+{"id": "bench-002459", "question": "List stock entries below 360 units."}
+{"id": "bench-002460", "question": "Which inventory records hold less than 360 items?"}
+{"id": "bench-002461", "question": "Show inventory rows with fewer than 544 units in stock."}
+{"id": "bench-002462", "question": "List stock entries below 544 units."}
+{"id": "bench-002463", "question": "Which inventory records hold less than 544 items?"}
+{"id": "bench-002464", "question": "Show inventory rows with fewer than 630 units in stock."}
+{"id": "bench-002465", "question": "List stock entries below 630 units."}
+{"id": "bench-002466", "question": "Which inventory records hold less than 630 items?"}
+{"id": "bench-002467", "question": "Show inventory rows with fewer than 268 units in stock."}
+{"id": "bench-002468", "question": "List stock entries below 268 units."}
+{"id": "bench-002469", "question": "Which inventory records hold less than 268 items?"}
+{"id": "bench-002470", "question": "Show inventory rows with fewer than 89 units in stock."}
+{"id": "bench-002471", "question": "List stock entries below 89 units."}
+{"id": "bench-002472", "question": "Which inventory records hold less than 89 items?"}
+{"id": "bench-002473", "question": "Show inventory rows with fewer than 456 units in stock."}
+{"id": "bench-002474", "question": "List stock entries below 456 units."}
+{"id": "bench-002475", "question": "Which inventory records hold less than 456 items?"}
+{"id": "bench-002476", "question": "Show inventory rows with fewer than 179 units in stock."}
+{"id": "bench-002477", "question": "List stock entries below 179 units."}
+{"id": "bench-002478", "question": "Which inventory records hold less than 179 items?"}
+{"id": "bench-002479", "question": "Show inventory rows with fewer than 717 units in stock."}
+{"id": "bench-002480", "question": "List stock entries below 717 units."}
+{"id": "bench-002481", "question": "Which inventory records hold less than 717 items?"}
+{"id": "bench-002482", "question": "Show inventory rows with fewer than 812 units in stock."}
+{"id": "bench-002483", "question": "List stock entries below 812 units."}
+{"id": "bench-002484", "question": "Which inventory records hold less than 812 items?"}
+{"id": "bench-002539", "question": "What is the average payment amount for each method?"}
+{"id": "bench-002540", "question": "Show mean payment value by payment method."}
+{"id": "bench-002541", "question": "Calculate the average transaction size per method."}
+{"id": "bench-002542", "question": "Which payment methods were used more than 7182 times?"}
+{"id": "bench-002543", "question": "Show methods with over 7182 transactions."}
+{"id": "bench-002544", "question": "List payment methods exceeding 7182 uses."}
+{"id": "bench-002545", "question": "Which payment methods were used more than 7248 times?"}
+{"id": "bench-002546", "question": "Show methods with over 7248 transactions."}
+{"id": "bench-002547", "question": "List payment methods exceeding 7248 uses."}
+{"id": "bench-002548", "question": "Which payment methods were used more than 6993 times?"}
+{"id": "bench-002549", "question": "Show methods with over 6993 transactions."}
+{"id": "bench-002550", "question": "List payment methods exceeding 6993 uses."}
+{"id": "bench-002551", "question": "Which payment methods were used more than 6937 times?"}
+{"id": "bench-002552", "question": "Show methods with over 6937 transactions."}
+{"id": "bench-002553", "question": "List payment methods exceeding 6937 uses."}
+{"id": "bench-002554", "question": "Which payment methods were used more than 7149 times?"}
+{"id": "bench-002555", "question": "Show methods with over 7149 transactions."}
+{"id": "bench-002556", "question": "List payment methods exceeding 7149 uses."}
+{"id": "bench-002557", "question": "How many shipments were sent each year?"}
+{"id": "bench-002558", "question": "Show yearly shipment counts."}
+{"id": "bench-002559", "question": "Break down shipment volume by year."}
+{"id": "bench-002671", "question": "What is the average discount given on each product?"}
+{"id": "bench-002672", "question": "Show mean discount percentage per product id."}
+{"id": "bench-002673", "question": "Calculate average discount by product."}
+{"id": "bench-002677", "question": "How many shipments originate from each warehouse country?"}
+{"id": "bench-002678", "question": "Show shipment counts by the country of the dispatching warehouse."}
+{"id": "bench-002679", "question": "Which countries dispatch the most shipments?"}
+{"id": "bench-002767", "question": "Which 2 warehouses hold the most valuable stock?"}
+{"id": "bench-002768", "question": "Show the top 2 warehouses by inventory value."}
+{"id": "bench-002769", "question": "List the 2 warehouses with the highest stock value."}
+{"id": "bench-002770", "question": "Which 11 warehouses hold the most valuable stock?"}
+{"id": "bench-002771", "question": "Show the top 11 warehouses by inventory value."}
+{"id": "bench-002772", "question": "List the 11 warehouses with the highest stock value."}
+{"id": "bench-002773", "question": "Which 6 warehouses hold the most valuable stock?"}
+{"id": "bench-002774", "question": "Show the top 6 warehouses by inventory value."}
+{"id": "bench-002775", "question": "List the 6 warehouses with the highest stock value."}
+{"id": "bench-002776", "question": "Which 8 warehouses hold the most valuable stock?"}
+{"id": "bench-002777", "question": "Show the top 8 warehouses by inventory value."}
+{"id": "bench-002778", "question": "List the 8 warehouses with the highest stock value."}
+{"id": "bench-002779", "question": "Which 3 warehouses hold the most valuable stock?"}
+{"id": "bench-002780", "question": "Show the top 3 warehouses by inventory value."}
+{"id": "bench-002781", "question": "List the 3 warehouses with the highest stock value."}
+{"id": "bench-002782", "question": "Which 12 warehouses hold the most valuable stock?"}
+{"id": "bench-002783", "question": "Show the top 12 warehouses by inventory value."}
+{"id": "bench-002784", "question": "List the 12 warehouses with the highest stock value."}
+{"id": "bench-002785", "question": "Which 7 warehouses hold the most valuable stock?"}
+{"id": "bench-002786", "question": "Show the top 7 warehouses by inventory value."}
+{"id": "bench-002787", "question": "List the 7 warehouses with the highest stock value."}
+{"id": "bench-002788", "question": "Which 9 warehouses hold the most valuable stock?"}
+{"id": "bench-002789", "question": "Show the top 9 warehouses by inventory value."}
+{"id": "bench-002790", "question": "List the 9 warehouses with the highest stock value."}
+{"id": "bench-002791", "question": "Which 10 warehouses hold the most valuable stock?"}
+{"id": "bench-002792", "question": "Show the top 10 warehouses by inventory value."}
+{"id": "bench-002793", "question": "List the 10 warehouses with the highest stock value."}
+{"id": "bench-002794", "question": "Which 5 warehouses hold the most valuable stock?"}
+{"id": "bench-002795", "question": "Show the top 5 warehouses by inventory value."}
+{"id": "bench-002796", "question": "List the 5 warehouses with the highest stock value."}
+{"id": "bench-002797", "question": "Which 4 warehouses hold the most valuable stock?"}
+{"id": "bench-002798", "question": "Show the top 4 warehouses by inventory value."}
+{"id": "bench-002799", "question": "List the 4 warehouses with the highest stock value."}
+{"id": "bench-002800", "question": "Which categories have an average product price above 482?"}
+{"id": "bench-002801", "question": "Show categories where the mean price exceeds 482."}
+{"id": "bench-002802", "question": "List category names whose average price is over 482."}
+{"id": "bench-002803", "question": "Which categories have an average product price above 535?"}
+{"id": "bench-002804", "question": "Show categories where the mean price exceeds 535."}
+{"id": "bench-002805", "question": "List category names whose average price is over 535."}
+{"id": "bench-002806", "question": "Which categories have an average product price above 771?"}
+{"id": "bench-002807", "question": "Show categories where the mean price exceeds 771."}
+{"id": "bench-002808", "question": "List category names whose average price is over 771."}
+{"id": "bench-002809", "question": "Which categories have an average product price above 824?"}
+{"id": "bench-002810", "question": "Show categories where the mean price exceeds 824."}
+{"id": "bench-002811", "question": "List category names whose average price is over 824."}
+{"id": "bench-002812", "question": "Which categories have an average product price above 728?"}
+{"id": "bench-002813", "question": "Show categories where the mean price exceeds 728."}
+{"id": "bench-002814", "question": "List category names whose average price is over 728."}
+{"id": "bench-002815", "question": "Which categories have an average product price above 577?"}
+{"id": "bench-002816", "question": "Show categories where the mean price exceeds 577."}
+{"id": "bench-002817", "question": "List category names whose average price is over 577."}
+{"id": "bench-002818", "question": "Which categories have an average product price above 617?"}
+{"id": "bench-002819", "question": "Show categories where the mean price exceeds 617."}
+{"id": "bench-002820", "question": "List category names whose average price is over 617."}
+{"id": "bench-002821", "question": "Which categories have an average product price above 401?"}
+{"id": "bench-002822", "question": "Show categories where the mean price exceeds 401."}
+{"id": "bench-002823", "question": "List category names whose average price is over 401."}
+{"id": "bench-002824", "question": "Which categories have an average product price above 682?"}
+{"id": "bench-002825", "question": "Show categories where the mean price exceeds 682."}
+{"id": "bench-002826", "question": "List category names whose average price is over 682."}
+{"id": "bench-002908", "question": "How many days on average pass between an order and its payment?"}
+{"id": "bench-002909", "question": "Calculate mean days from order to payment."}
+{"id": "bench-002910", "question": "What is the average collection delay in days?"}
+{"id": "bench-002917", "question": "Show the cumulative number of customers by signup month."}
+{"id": "bench-002918", "question": "Calculate customer growth month by month."}
+{"id": "bench-002919", "question": "How has our customer base accumulated over time?"}
+{"id": "bench-002923", "question": "For each warehouse, how many shipments were delivered versus lost?"}
+{"id": "bench-002924", "question": "Show delivered and lost shipment counts per warehouse."}
+{"id": "bench-002925", "question": "Compare delivery outcomes by warehouse."}
+{"id": "bench-002926", "question": "Which countries have an above-average number of orders per customer?"}
+{"id": "bench-002927", "question": "Show countries where customers order more often than average."}
+{"id": "bench-002928", "question": "List countries with above-average orders per customer."}
+{"id": "bench-002941", "question": "Which paid orders have never been shipped?"}
+{"id": "bench-002942", "question": "Show orders that were paid but never dispatched."}
+{"id": "bench-002943", "question": "List paid orders still awaiting shipment."}
+{"id": "bench-003040", "question": "Which categories have the most stock sitting below reorder level?"}
+{"id": "bench-003041", "question": "Show understocked categories."}
+{"id": "bench-003042", "question": "Where are our biggest restocking gaps by category?"}

@@ -31,6 +31,7 @@ Usage (from the project root):
 
 from __future__ import annotations
 
+import argparse
 import json
 import statistics
 import sys
@@ -48,17 +49,11 @@ from dataset.formatting.sft import (  # noqa: E402
     file_hash,
     normalise_sql,
 )
-from src.model.prompt import prompt_fingerprint  # noqa: E402
+from src.benchmark_versions import add_version_argument, get as get_version  # noqa: E402
 from src.model.schema_context import build_schema_context  # noqa: E402
 from src.sql.config import PROJECT_ROOT, ConfigError, app_config  # noqa: E402
 from src.sql.executor import read_only_connection  # noqa: E402
 
-SOURCES = {
-    "train": PROJECT_ROOT / "dataset" / "train" / "train.jsonl",
-    "validation": PROJECT_ROOT / "dataset" / "validation" / "validation.jsonl",
-}
-TEST_SET = PROJECT_ROOT / "dataset" / "test" / "test.jsonl"
-OUT_DIR = PROJECT_ROOT / "dataset" / "sft"
 
 # Recorded when the Phase 5 baseline was frozen. Training must match.
 BASELINE_PROMPT_FINGERPRINT = "8288e41a496531a9"
@@ -83,6 +78,18 @@ def check(condition: bool, label: str, detail: str = "") -> None:
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser(description="Build the SFT dataset")
+    add_version_argument(parser)
+    args = parser.parse_args()
+    version = get_version(args.version)
+    prompt = version.prompt()
+    prompt_fingerprint = prompt.prompt_fingerprint
+    SOURCES = {name: version.split(name) for name in ("train", "validation")}
+    TEST_SET = version.split("test")
+    OUT_DIR = version.sft_dir
+    # v1 must match the frozen baseline; later versions match their own prompt module.
+    expected_prompt_fp = BASELINE_PROMPT_FINGERPRINT if version.is_v1 else prompt.prompt_fingerprint()
+
     try:
         cfg = app_config()
     except ConfigError as exc:
@@ -97,12 +104,14 @@ def main() -> int:
         schema_text, schema_fp = build_schema_context(conn)
 
     print(f"schema      : full schema, {len(schema_text):,} chars (hash {schema_fp})")
-    print(f"prompt      : {prompt_fingerprint()} (v1, shared with the baseline)\n")
+    print(f"benchmark   : {version.name}")
+    print(f"prompt      : {prompt_fingerprint()} ({prompt.PROMPT_VERSION}, {version.prompt_module})\n")
 
     print("--- consistency with the frozen baseline ---")
-    check(prompt_fingerprint() == BASELINE_PROMPT_FINGERPRINT,
-          "prompt template matches the frozen Phase 5 baseline",
-          f"got {prompt_fingerprint()}, expected {BASELINE_PROMPT_FINGERPRINT}")
+    check(prompt_fingerprint() == expected_prompt_fp,
+          "prompt template matches the frozen Phase 5 baseline" if version.is_v1
+          else f"prompt template matches {version.prompt_module}",
+          f"got {prompt_fingerprint()}, expected {expected_prompt_fp}")
     check(schema_fp == BASELINE_SCHEMA_FINGERPRINT,
           "rendered schema matches the frozen Phase 5 baseline",
           f"got {schema_fp}, expected {BASELINE_SCHEMA_FINGERPRINT}")
@@ -129,7 +138,7 @@ def main() -> int:
         check(not missing, "every example has a question and gold SQL",
               f"{len(missing)} incomplete")
 
-        records = build_records(examples, schema_text)
+        records = build_records(examples, schema_text, prompt)
 
         check(all(len(r.messages) == 3 for r in records),
               "every record has system + user + assistant turns")
@@ -284,7 +293,7 @@ def main() -> int:
         "phase": 7,
         "purpose": "supervised fine-tuning dataset for Qwen3-8B",
         "training_not_started": True,
-        "format": describe_format(),
+        "format": describe_format(prompt),
         "schema": {
             "mode": "full_schema_no_retrieval",
             "fingerprint": schema_fp,
@@ -314,8 +323,9 @@ def main() -> int:
         "model sees during Phase 9 training: three chat turns, nothing else.",
         "The `meta` block below sits *outside* `messages` and is never rendered.",
         "",
-        f"- prompt template: `{describe_format()['prompt_version']}` "
-        f"(fingerprint `{prompt_fingerprint()}`) — identical to the frozen baseline",
+        f"- prompt template: `{describe_format(prompt)['prompt_version']}` "
+        f"(fingerprint `{prompt_fingerprint()}`) — "
+        + ("identical to the frozen baseline" if version.is_v1 else f"from {version.prompt_module}"),
         f"- schema: full, {len(schema_text):,} chars, fingerprint `{schema_fp}`",
         "",
         "---",

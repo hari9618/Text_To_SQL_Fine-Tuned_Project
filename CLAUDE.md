@@ -500,6 +500,37 @@ reference date in the prompt (`x14`), and partitioned window functions
 This was done on the test set. Any fix it motivates is decided on validation
 and re-measured as a new configuration; 52.10 % stays frozen.
 
+### Phase 15 — iteration v2 (started 2026-09-18, GPU runs pending)
+
+The failure analysis motivated a second iteration. **v1 stays frozen**; v2 is
+built beside it and selected with `--version v2` on every script
+(`src/benchmark_versions.py` resolves paths and modules).
+
+* **Benchmark v2** — `dataset/generation/templates_v2.py` overrides v1 by
+  five documented rules (whole row when no columns are named; money and
+  month conventions made consistent; one ambiguous paraphrase reworded; five
+  train-only templates adding `PARTITION BY` and day arithmetic). Files under
+  `dataset/v2/`. **Split pinned to v1**: same 453 test ids, same 48 test
+  templates, 445/453 identical questions; new templates -> train only.
+* **Prompt v2** — `src/model/prompt_v2.py` (fingerprint `4e72cc5f722ce436`):
+  v1 plus the `DATA_AS_OF` reference date, a business glossary, and output
+  conventions. Import-free; ships in the eval pack.
+* **SFT v2** — `dataset/v2/sft/` (2,175 / 459; content hashes
+  `5003da4e7e0d1825` / `91195bc38f324533`; prompt mean 1,797 tokens, max
+  1,926 < 2048).
+* **Re-scoring** (`scripts/rescore.py`) of the v1 predictions on v2 gold:
+  base 34.22 %, base+retr 35.54 %, FT 39.07 %, FT+retr 35.32 %, FT+repair
+  40.18 %. On the fair benchmark the v1 fine-tune's gain is **+4.85 pp, not
+  +40** — the projection finding, confirmed. Under `experiments/v2/*_rescored/`.
+* **Pending GPU runs** (see `training/kaggle/README.md`, v2 section): train
+  v2 adapter -> `models/finetuned_v2/`; generate with it on the v2 eval pack;
+  generate with the *base* model on the same pack (both HF accounts'
+  monthly inference credits are exhausted, so the v2 base row is a 4-bit
+  Kaggle run, routed by the header's `model_kind`). Score with
+  `score_finetuned.py --version v2`; oracle self-test on that path = 100 %.
+
+The headline stays 52.10 % (v1) until the v2 adapter is measured.
+
 ### Hardware constraint (important)
 
 Local laptop: Intel Core i5-8365U, **8 GB RAM**, Intel UHD Graphics 620.

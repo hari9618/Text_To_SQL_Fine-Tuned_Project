@@ -1,0 +1,111 @@
+{
+  "phase": 7,
+  "purpose": "supervised fine-tuning dataset for Qwen3-8B",
+  "training_not_started": true,
+  "format": {
+    "task": "question + full schema -> PostgreSQL SQL",
+    "format": "chat messages (system, user, assistant)",
+    "prompt_version": "v2",
+    "prompt_fingerprint": "4e72cc5f722ce436",
+    "prompt_source": "src/model/prompt_v2.py",
+    "schema_mode": "full_schema_no_retrieval",
+    "schema_rationale": "Phase 6 measured retrieval on this 12-table schema: strict accuracy fell from 10.82 % to 9.27 %. Full schema is the pipeline default.",
+    "assistant_content": "gold SQL only, whitespace-normalised, no fence, no prose",
+    "thinking_mode": "disabled via /no_think, matching baseline inference",
+    "system_prompt_chars": 1772
+  },
+  "schema": {
+    "mode": "full_schema_no_retrieval",
+    "fingerprint": "d03619e711661bc5",
+    "chars": 5455,
+    "matches_frozen_baseline": true
+  },
+  "excluded_from_prompt": [
+    "template_id",
+    "phrasing_index",
+    "slot_values",
+    "referenced_tables",
+    "fingerprint",
+    "row_count",
+    "\"split\"",
+    "difficulty",
+    "query_type"
+  ],
+  "test_set": {
+    "path": "dataset/test/test.jsonl",
+    "sha256_16": "d7ec17963f69c87d",
+    "examples": 453,
+    "used_for": "contamination checking only; never written, never trained on"
+  },
+  "suggested_max_seq_len": 2048,
+  "splits": {
+    "train": {
+      "source_path": "dataset/v2/train/train.jsonl",
+      "source_sha256_16": "8d2c64eddc8f8c32",
+      "examples": 2175,
+      "templates": 79,
+      "by_difficulty": {
+        "hard": 675,
+        "easy": 597,
+        "enterprise": 396,
+        "medium": 300,
+        "very_hard": 207
+      },
+      "by_domain": {
+        "sales": 909,
+        "catalogue": 501,
+        "cross_domain": 363,
+        "hr": 204,
+        "finance": 108,
+        "logistics": 90
+      },
+      "tokens": {
+        "prompt_mean": 1796.8,
+        "prompt_max": 1805,
+        "completion_mean": 43.8,
+        "completion_max": 130,
+        "total_mean": 1840.6,
+        "total_max": 1926,
+        "total_p99": 1893,
+        "note": "excludes chat-template control tokens added at training time"
+      },
+      "output_path": "dataset/v2/sft/train.jsonl",
+      "output_sha256_16": "144c95ec0292b544",
+      "content_hash": "5003da4e7e0d1825"
+    },
+    "validation": {
+      "source_path": "dataset/v2/validation/validation.jsonl",
+      "source_sha256_16": "8ff6eb9d2c315f24",
+      "examples": 459,
+      "templates": 52,
+      "by_difficulty": {
+        "hard": 144,
+        "easy": 129,
+        "enterprise": 87,
+        "medium": 63,
+        "very_hard": 36
+      },
+      "by_domain": {
+        "sales": 276,
+        "catalogue": 114,
+        "hr": 42,
+        "logistics": 12,
+        "cross_domain": 9,
+        "finance": 6
+      },
+      "tokens": {
+        "prompt_mean": 1796.4,
+        "prompt_max": 1802,
+        "completion_mean": 40.6,
+        "completion_max": 90,
+        "total_mean": 1837.0,
+        "total_max": 1892,
+        "total_p99": 1890,
+        "note": "excludes chat-template control tokens added at training time"
+      },
+      "output_path": "dataset/v2/sft/validation.jsonl",
+      "output_sha256_16": "43dbe89266092aaf",
+      "content_hash": "91195bc38f324533"
+    }
+  }
+}

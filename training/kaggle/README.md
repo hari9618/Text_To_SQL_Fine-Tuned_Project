@@ -76,3 +76,36 @@ gradient accumulation 8, gradient checkpointing on, fp16 (T4 has no bf16).
 checkpointing, ~1,500-token activations for two sequences exceed a T4. Batch 2
 *with* checkpointing is untested and may work — but the default is the config
 that is known to run.
+
+---
+
+## v2 — the second iteration (benchmark v2, prompt v2)
+
+Three Kaggle runs, in this order. All free-tier; total GPU time ~8 h, inside
+the 30 h weekly quota.
+
+| # | notebook | inputs | output | time |
+|---|---|---|---|---|
+| 1 | `kaggle_qlora_qwen3_8b_v2.ipynb` | dataset **`text2sql-sft-v2`** (from `Downloads/text2sql-sft-v2.zip`) | `adapter.zip` | ~6–7 h |
+| 2 | `kaggle_generate_finetuned.ipynb` | run 1's output **+** dataset **`text2sql-evalpack-v2`** (from `Downloads/text2sql-evalpack-v2.zip`) | `predictions_v2_final.jsonl` | ~35 min |
+| 3 | `kaggle_generate_finetuned.ipynb` | **only** dataset `text2sql-evalpack-v2` — no adapter | `predictions_base_v2_final.jsonl` | ~35 min |
+
+Run 3 is the v2 base-model row. With no adapter in its inputs the notebook
+loads the base model alone, same 4-bit load and greedy decoding, so the v2
+base and fine-tuned rows are generated on identical hardware. (The v1 base
+row came through Hugging Face inference; both accounts' monthly inference
+credits are exhausted, and Kaggle is free.)
+
+Runs 2 and 3 can be the same notebook committed twice with a different Input
+panel. The output filename says which it was; the header inside says so too,
+and the scorer routes on it.
+
+Then, on the laptop:
+
+```powershell
+env\Scripts\python.exe scripts/score_finetuned.py --version v2 --predictions "C:\Users\dell\Downloads\predictions_base_v2_final.jsonl"
+env\Scripts\python.exe scripts/score_finetuned.py --version v2 --predictions "C:\Users\dell\Downloads\predictions_v2_final.jsonl"
+```
+
+Unzip run 1's `adapter.zip` into `models/finetuned_v2/` first so the scorer
+can record the training config beside the result.

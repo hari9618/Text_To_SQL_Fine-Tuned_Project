@@ -1,0 +1,1120 @@
+{
+  "totals": {
+    "total_examples": 453,
+    "correct": 160,
+    "execution_accuracy_pct": 35.32,
+    "executable_sql": 430,
+    "executable_sql_pct": 94.92,
+    "wrong_result": 270,
+    "wrong_result_pct": 59.6
+  },
+  "projection_analysis": {
+    "note": "Many benchmark questions never say which columns to return (\"Show orders placed in 2023\"). The headline metric demands an exact column match, so SELECT * scores wrong even when the rows are identical. This splits those cases apart.",
+    "projection_mismatch_only": 0,
+    "projection_mismatch_only_pct": 0.0,
+    "genuinely_different_rows": 270,
+    "genuinely_different_rows_pct": 59.6,
+    "projection_tolerant_correct": 160,
+    "projection_tolerant_accuracy_pct": 35.32
+  },
+  "error_rates": {
+    "syntax_error_pct": 0.0,
+    "unknown_table_pct": 0.0,
+    "unknown_column_pct": 3.53,
+    "schema_hallucination_pct": 3.53,
+    "execution_error_pct": 1.55,
+    "timeout_pct": 0.0,
+    "no_sql_produced_pct": 0.0,
+    "invalid_sql_pct": 0.0,
+    "not_read_only_pct": 0.0,
+    "generation_failed_pct": 0.0
+  },
+  "strict_order_sensitive": {
+    "scope": 253,
+    "correct": 124,
+    "accuracy_pct": 49.01,
+    "note": "Subset whose gold query has ORDER BY, scored with row order respected. The headline metric ignores row order."
+  },
+  "latency": {
+    "generation_clean": {
+      "mean_ms": 2268.3,
+      "median_ms": 2076.55,
+      "p90_ms": 3358.64,
+      "min_ms": 785.2,
+      "max_ms": 3729.73
+    },
+    "throttled_calls": 0,
+    "generation": {
+      "mean_ms": 2268.3,
+      "median_ms": 2076.55,
+      "p90_ms": 3358.64,
+      "min_ms": 785.2,
+      "max_ms": 3729.73
+    },
+    "execution": {
+      "mean_ms": 31.21,
+      "median_ms": 12.27,
+      "p90_ms": 64.3,
+      "min_ms": 0.26,
+      "max_ms": 339.77
+    },
+    "total": {
+      "mean_ms": 2299.51,
+      "median_ms": 2082.24,
+      "p90_ms": 3367.31,
+      "min_ms": 794.82,
+      "max_ms": 3910.69
+    }
+  },
+  "tokens": {
+    "prompt_tokens_mean": 725.9,
+    "completion_tokens_mean": 41.1,
+    "prompt_tokens_total": 328817,
+    "completion_tokens_total": 18632
+  },
+  "retrieval": null,
+  "outcomes": {
+    "wrong_result": 270,
+    "correct": 160,
+    "unknown_column": 16,
+    "execution_error": 7
+  },
+  "by_difficulty": {
+    "easy": {
+      "total": 126,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 126,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 126
+      }
+    },
+    "enterprise": {
+      "total": 84,
+      "correct": 6,
+      "execution_accuracy_pct": 7.14,
+      "executable": 79,
+      "executable_pct": 94.05,
+      "outcomes": {
+        "wrong_result": 73,
+        "correct": 6,
+        "execution_error": 3,
+        "unknown_column": 2
+      }
+    },
+    "hard": {
+      "total": 144,
+      "correct": 90,
+      "execution_accuracy_pct": 62.5,
+      "executable": 133,
+      "executable_pct": 92.36,
+      "outcomes": {
+        "correct": 90,
+        "wrong_result": 43,
+        "unknown_column": 11
+      }
+    },
+    "medium": {
+      "total": 63,
+      "correct": 62,
+      "execution_accuracy_pct": 98.41,
+      "executable": 63,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 62,
+        "wrong_result": 1
+      }
+    },
+    "very_hard": {
+      "total": 36,
+      "correct": 2,
+      "execution_accuracy_pct": 5.56,
+      "executable": 29,
+      "executable_pct": 80.56,
+      "outcomes": {
+        "wrong_result": 27,
+        "execution_error": 4,
+        "unknown_column": 3,
+        "correct": 2
+      }
+    }
+  },
+  "by_domain": {
+    "catalogue": {
+      "total": 57,
+      "correct": 34,
+      "execution_accuracy_pct": 59.65,
+      "executable": 57,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 34,
+        "wrong_result": 23
+      }
+    },
+    "cross_domain": {
+      "total": 3,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 2,
+      "executable_pct": 66.67,
+      "outcomes": {
+        "wrong_result": 2,
+        "unknown_column": 1
+      }
+    },
+    "finance": {
+      "total": 66,
+      "correct": 21,
+      "execution_accuracy_pct": 31.82,
+      "executable": 63,
+      "executable_pct": 95.45,
+      "outcomes": {
+        "wrong_result": 42,
+        "correct": 21,
+        "execution_error": 3
+      }
+    },
+    "hr": {
+      "total": 9,
+      "correct": 5,
+      "execution_accuracy_pct": 55.56,
+      "executable": 9,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 5,
+        "wrong_result": 4
+      }
+    },
+    "logistics": {
+      "total": 162,
+      "correct": 50,
+      "execution_accuracy_pct": 30.86,
+      "executable": 143,
+      "executable_pct": 88.27,
+      "outcomes": {
+        "wrong_result": 93,
+        "correct": 50,
+        "unknown_column": 15,
+        "execution_error": 4
+      }
+    },
+    "sales": {
+      "total": 156,
+      "correct": 50,
+      "execution_accuracy_pct": 32.05,
+      "executable": 156,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 106,
+        "correct": 50
+      }
+    }
+  },
+  "by_query_type": {
+    "avg": {
+      "total": 48,
+      "correct": 41,
+      "execution_accuracy_pct": 85.42,
+      "executable": 42,
+      "executable_pct": 87.5,
+      "outcomes": {
+        "correct": 41,
+        "execution_error": 4,
+        "unknown_column": 2,
+        "wrong_result": 1
+      }
+    },
+    "business_rule": {
+      "total": 72,
+      "correct": 6,
+      "execution_accuracy_pct": 8.33,
+      "executable": 67,
+      "executable_pct": 93.06,
+      "outcomes": {
+        "wrong_result": 61,
+        "correct": 6,
+        "execution_error": 3,
+        "unknown_column": 2
+      }
+    },
+    "churn": {
+      "total": 24,
+      "correct": 3,
+      "execution_accuracy_pct": 12.5,
+      "executable": 24,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 21,
+        "correct": 3
+      }
+    },
+    "coalesce": {
+      "total": 3,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 3
+      }
+    },
+    "conditional_aggregation": {
+      "total": 3,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 3
+      }
+    },
+    "count": {
+      "total": 57,
+      "correct": 54,
+      "execution_accuracy_pct": 94.74,
+      "executable": 57,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 54,
+        "wrong_result": 3
+      }
+    },
+    "cross_domain": {
+      "total": 9,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 4,
+      "executable_pct": 44.44,
+      "outcomes": {
+        "wrong_result": 4,
+        "execution_error": 3,
+        "unknown_column": 2
+      }
+    },
+    "date": {
+      "total": 111,
+      "correct": 34,
+      "execution_accuracy_pct": 30.63,
+      "executable": 111,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 77,
+        "correct": 34
+      }
+    },
+    "date_comparison": {
+      "total": 3,
+      "correct": 1,
+      "execution_accuracy_pct": 33.33,
+      "executable": 2,
+      "executable_pct": 66.67,
+      "outcomes": {
+        "correct": 1,
+        "wrong_result": 1,
+        "unknown_column": 1
+      }
+    },
+    "date_diff": {
+      "total": 6,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 0,
+      "executable_pct": 0.0,
+      "outcomes": {
+        "execution_error": 4,
+        "unknown_column": 2
+      }
+    },
+    "first_value": {
+      "total": 3,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 3
+      }
+    },
+    "group_by": {
+      "total": 174,
+      "correct": 116,
+      "execution_accuracy_pct": 66.67,
+      "executable": 160,
+      "executable_pct": 91.95,
+      "outcomes": {
+        "correct": 116,
+        "wrong_result": 44,
+        "unknown_column": 13,
+        "execution_error": 1
+      }
+    },
+    "having": {
+      "total": 48,
+      "correct": 42,
+      "execution_accuracy_pct": 87.5,
+      "executable": 48,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 42,
+        "wrong_result": 6
+      }
+    },
+    "hierarchy": {
+      "total": 3,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 3
+      }
+    },
+    "join": {
+      "total": 48,
+      "correct": 33,
+      "execution_accuracy_pct": 68.75,
+      "executable": 43,
+      "executable_pct": 89.58,
+      "outcomes": {
+        "correct": 33,
+        "wrong_result": 10,
+        "execution_error": 3,
+        "unknown_column": 2
+      }
+    },
+    "left_join": {
+      "total": 3,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 3
+      }
+    },
+    "limit": {
+      "total": 66,
+      "correct": 21,
+      "execution_accuracy_pct": 31.82,
+      "executable": 55,
+      "executable_pct": 83.33,
+      "outcomes": {
+        "wrong_result": 34,
+        "correct": 21,
+        "unknown_column": 11
+      }
+    },
+    "multi_join": {
+      "total": 99,
+      "correct": 52,
+      "execution_accuracy_pct": 52.53,
+      "executable": 88,
+      "executable_pct": 88.89,
+      "outcomes": {
+        "correct": 52,
+        "wrong_result": 36,
+        "unknown_column": 11
+      }
+    },
+    "nested_aggregation": {
+      "total": 3,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 3
+      }
+    },
+    "not_exists": {
+      "total": 6,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 6,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 6
+      }
+    },
+    "null_handling": {
+      "total": 42,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 42,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 42
+      }
+    },
+    "order_by": {
+      "total": 78,
+      "correct": 31,
+      "execution_accuracy_pct": 39.74,
+      "executable": 67,
+      "executable_pct": 85.9,
+      "outcomes": {
+        "wrong_result": 36,
+        "correct": 31,
+        "unknown_column": 11
+      }
+    },
+    "partition": {
+      "total": 12,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 12,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 12
+      }
+    },
+    "recursive_cte": {
+      "total": 3,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 3
+      }
+    },
+    "row_number": {
+      "total": 12,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 12,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 12
+      }
+    },
+    "running_total": {
+      "total": 3,
+      "correct": 1,
+      "execution_accuracy_pct": 33.33,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 2,
+        "correct": 1
+      }
+    },
+    "select": {
+      "total": 126,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 126,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 126
+      }
+    },
+    "self_join": {
+      "total": 3,
+      "correct": 2,
+      "execution_accuracy_pct": 66.67,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 2,
+        "wrong_result": 1
+      }
+    },
+    "subquery": {
+      "total": 6,
+      "correct": 3,
+      "execution_accuracy_pct": 50.0,
+      "executable": 6,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 3,
+        "correct": 3
+      }
+    },
+    "sum": {
+      "total": 69,
+      "correct": 24,
+      "execution_accuracy_pct": 34.78,
+      "executable": 58,
+      "executable_pct": 84.06,
+      "outcomes": {
+        "wrong_result": 34,
+        "correct": 24,
+        "unknown_column": 11
+      }
+    },
+    "where": {
+      "total": 162,
+      "correct": 34,
+      "execution_accuracy_pct": 20.99,
+      "executable": 162,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 128,
+        "correct": 34
+      }
+    },
+    "window": {
+      "total": 18,
+      "correct": 1,
+      "execution_accuracy_pct": 5.56,
+      "executable": 18,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 17,
+        "correct": 1
+      }
+    }
+  },
+  "by_template": {
+    "e13": {
+      "total": 24,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 24,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 24
+      }
+    },
+    "e22": {
+      "total": 15,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 15,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 15
+      }
+    },
+    "e25": {
+      "total": 27,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 27,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 27
+      }
+    },
+    "e27": {
+      "total": 9,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 9,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 9
+      }
+    },
+    "e28": {
+      "total": 24,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 24,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 24
+      }
+    },
+    "e33": {
+      "total": 27,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 27,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 27
+      }
+    },
+    "h02": {
+      "total": 33,
+      "correct": 10,
+      "execution_accuracy_pct": 30.3,
+      "executable": 33,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 23,
+        "correct": 10
+      }
+    },
+    "h05": {
+      "total": 3,
+      "correct": 2,
+      "execution_accuracy_pct": 66.67,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 2,
+        "wrong_result": 1
+      }
+    },
+    "h08": {
+      "total": 3,
+      "correct": 2,
+      "execution_accuracy_pct": 66.67,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 2,
+        "wrong_result": 1
+      }
+    },
+    "h12": {
+      "total": 3,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 3
+      }
+    },
+    "h13": {
+      "total": 3,
+      "correct": 3,
+      "execution_accuracy_pct": 100.0,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 3
+      }
+    },
+    "h18": {
+      "total": 3,
+      "correct": 2,
+      "execution_accuracy_pct": 66.67,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 2,
+        "wrong_result": 1
+      }
+    },
+    "h19": {
+      "total": 33,
+      "correct": 31,
+      "execution_accuracy_pct": 93.94,
+      "executable": 33,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 31,
+        "wrong_result": 2
+      }
+    },
+    "h26": {
+      "total": 3,
+      "correct": 2,
+      "execution_accuracy_pct": 66.67,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 2,
+        "wrong_result": 1
+      }
+    },
+    "h32": {
+      "total": 33,
+      "correct": 11,
+      "execution_accuracy_pct": 33.33,
+      "executable": 22,
+      "executable_pct": 66.67,
+      "outcomes": {
+        "unknown_column": 11,
+        "correct": 11,
+        "wrong_result": 11
+      }
+    },
+    "h33": {
+      "total": 27,
+      "correct": 27,
+      "execution_accuracy_pct": 100.0,
+      "executable": 27,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 27
+      }
+    },
+    "m04": {
+      "total": 3,
+      "correct": 3,
+      "execution_accuracy_pct": 100.0,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 3
+      }
+    },
+    "m08": {
+      "total": 3,
+      "correct": 3,
+      "execution_accuracy_pct": 100.0,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 3
+      }
+    },
+    "m09": {
+      "total": 24,
+      "correct": 24,
+      "execution_accuracy_pct": 100.0,
+      "executable": 24,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 24
+      }
+    },
+    "m14": {
+      "total": 3,
+      "correct": 2,
+      "execution_accuracy_pct": 66.67,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 2,
+        "wrong_result": 1
+      }
+    },
+    "m17": {
+      "total": 3,
+      "correct": 3,
+      "execution_accuracy_pct": 100.0,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 3
+      }
+    },
+    "m20": {
+      "total": 3,
+      "correct": 3,
+      "execution_accuracy_pct": 100.0,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 3
+      }
+    },
+    "m29": {
+      "total": 3,
+      "correct": 3,
+      "execution_accuracy_pct": 100.0,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 3
+      }
+    },
+    "m30": {
+      "total": 15,
+      "correct": 15,
+      "execution_accuracy_pct": 100.0,
+      "executable": 15,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 15
+      }
+    },
+    "m31": {
+      "total": 3,
+      "correct": 3,
+      "execution_accuracy_pct": 100.0,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 3
+      }
+    },
+    "m42": {
+      "total": 3,
+      "correct": 3,
+      "execution_accuracy_pct": 100.0,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 3
+      }
+    },
+    "v02": {
+      "total": 12,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 12,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 12
+      }
+    },
+    "v08": {
+      "total": 3,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 0,
+      "executable_pct": 0.0,
+      "outcomes": {
+        "unknown_column": 2,
+        "execution_error": 1
+      }
+    },
+    "v11": {
+      "total": 3,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 3
+      }
+    },
+    "v15": {
+      "total": 3,
+      "correct": 1,
+      "execution_accuracy_pct": 33.33,
+      "executable": 2,
+      "executable_pct": 66.67,
+      "outcomes": {
+        "correct": 1,
+        "wrong_result": 1,
+        "unknown_column": 1
+      }
+    },
+    "v16": {
+      "total": 3,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 3
+      }
+    },
+    "v23": {
+      "total": 3,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 0,
+      "executable_pct": 0.0,
+      "outcomes": {
+        "execution_error": 3
+      }
+    },
+    "v26": {
+      "total": 3,
+      "correct": 1,
+      "execution_accuracy_pct": 33.33,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 2,
+        "correct": 1
+      }
+    },
+    "v28": {
+      "total": 3,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 3
+      }
+    },
+    "v29": {
+      "total": 3,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 3
+      }
+    },
+    "x01": {
+      "total": 3,
+      "correct": 3,
+      "execution_accuracy_pct": 100.0,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "correct": 3
+      }
+    },
+    "x02": {
+      "total": 3,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 3
+      }
+    },
+    "x04": {
+      "total": 3,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 3
+      }
+    },
+    "x05": {
+      "total": 3,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 3
+      }
+    },
+    "x06": {
+      "total": 27,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 27,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 27
+      }
+    },
+    "x07": {
+      "total": 3,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 3
+      }
+    },
+    "x08": {
+      "total": 3,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 2,
+      "executable_pct": 66.67,
+      "outcomes": {
+        "wrong_result": 2,
+        "unknown_column": 1
+      }
+    },
+    "x10": {
+      "total": 3,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 3
+      }
+    },
+    "x14": {
+      "total": 24,
+      "correct": 3,
+      "execution_accuracy_pct": 12.5,
+      "executable": 24,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 21,
+        "correct": 3
+      }
+    },
+    "x15": {
+      "total": 3,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 0,
+      "executable_pct": 0.0,
+      "outcomes": {
+        "execution_error": 3
+      }
+    },
+    "x19": {
+      "total": 3,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 3
+      }
+    },
+    "x21": {
+      "total": 3,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 3,
+      "executable_pct": 100.0,
+      "outcomes": {
+        "wrong_result": 3
+      }
+    },
+    "x31": {
+      "total": 3,
+      "correct": 0,
+      "execution_accuracy_pct": 0.0,
+      "executable": 2,
+      "executable_pct": 66.67,
+      "outcomes": {
+        "wrong_result": 2,
+        "unknown_column": 1
+      }
+    }
+  },
+  "run_metadata": {
+    "model": {
+      "kind": "rescored_from_checkpoint",
+      "model_id": "Qwen/Qwen3-8B",
+      "source_generations": "experiments/finetuned_retrieval/generations.jsonl"
+    },
+    "prompt": {
+      "version": "v1",
+      "fingerprint": "8288e41a496531a9"
+    },
+    "schema_context": {
+      "mode": "full_schema_no_retrieval",
+      "fingerprint": "d03619e711661bc5",
+      "characters": 5455,
+      "note": "Phase 4 is ablation configuration 1: the base model sees the entire schema. Phase 6 replaces this with a retrieved subset."
+    },
+    "dataset": {
+      "path": "C:/Users/dell/Desktop/Enterprice-text to -SQL/dataset/v2/test/test.jsonl",
+      "fingerprint": "d7ec17963f69c87d"
+    },
+    "database": {
+      "postgres_version": "PostgreSQL 18.1 on x86_64-windows",
+      "data_fingerprint": "5a018e291c3df4ad",
+      "row_counts": "categories=120;customers=12000;departments=12;employees=500;inventory=6266;order_items=154069;orders=55000;payments=57088;products=2500;shipments=40850;suppliers=250;warehouses=15",
+      "data_as_of": "2026-08-01T00:00:00+00:00",
+      "data_as_of_sql": "TIMESTAMPTZ '2026-08-01 00:00:00+00:00'"
+    },
+    "evaluation": {
+      "method": "execution_based",
+      "comparison": "order-insensitive result fingerprint",
+      "strict_comparison": "order-sensitive, gold queries with ORDER BY only",
+      "sql_string_comparison": false
+    },
+    "rescoring": {
+      "benchmark_version": "v2",
+      "source_configuration": "4 \u00b7 fine-tuned + retrieval",
+      "source_generations": "experiments/finetuned_retrieval/generations.jsonl",
+      "generated_with_prompt": "v1",
+      "generated_against_questions": "v1",
+      "questions_reworded_in_this_version": [
+        "bench-002228",
+        "bench-002231",
+        "bench-002234",
+        "bench-002237",
+        "bench-002240",
+        "bench-002243",
+        "bench-002246",
+        "bench-002249"
+      ],
+      "note": "Predictions replayed from the v1 checkpoint and scored against benchmark v2 gold. Nothing was generated."
+    }
+  }
+}

@@ -53,7 +53,7 @@ from src.evaluation.metrics import (
     outcome_from_error_class,
 )
 from src.model.base_model import TextToSQLModel
-from src.model.prompt import PROMPT_VERSION, prompt_fingerprint
+from src.model import prompt as prompt_v1
 from src.sql import validator
 from src.sql.executor import ExecutionResult, SchemaInfo, execute
 
@@ -428,8 +428,12 @@ def build_run_metadata(
     schema_fingerprint_value: str,
     schema_text: str,
     tables: Iterable[str],
+    prompt=None,
 ) -> dict[str, Any]:
-    """Everything needed to reproduce or invalidate this run."""
+    """Everything needed to reproduce or invalidate this run.
+
+    ``prompt`` is the prompt module the run rendered with; v1 by default."""
+    prompt = prompt or prompt_v1
     with conn.cursor() as cur:
         cur.execute("SELECT version()")
         pg_version = cur.fetchone()[0].split(",")[0]
@@ -439,8 +443,8 @@ def build_run_metadata(
     return {
         "model": model.describe(),
         "prompt": {
-            "version": PROMPT_VERSION,
-            "fingerprint": prompt_fingerprint(),
+            "version": prompt.PROMPT_VERSION,
+            "fingerprint": prompt.prompt_fingerprint(),
         },
         "schema_context": {
             "mode": "full_schema_no_retrieval",

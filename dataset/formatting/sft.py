@@ -48,12 +48,9 @@ import json
 from dataclasses import dataclass, field
 from typing import Any, Iterable
 
-from src.model.prompt import (
-    PROMPT_VERSION,
-    SYSTEM_PROMPT,
-    build_messages,
-    prompt_fingerprint,
-)
+from types import ModuleType
+
+from src.model import prompt as prompt_v1
 
 # Fields that exist only for evaluation and analysis. Never rendered into a
 # prompt; carried in `meta` for offline slicing.
@@ -103,7 +100,8 @@ def normalise_sql(sql: str) -> str:
     return " ".join(sql.split()).strip()
 
 
-def build_record(example: dict[str, Any], schema_text: str) -> SFTRecord:
+def build_record(example: dict[str, Any], schema_text: str,
+                 prompt: ModuleType = prompt_v1) -> SFTRecord:
     """Convert one validated example into a chat-format training record.
 
     The assistant turn is the gold SQL and nothing else — no prose, no markdown
@@ -112,7 +110,7 @@ def build_record(example: dict[str, Any], schema_text: str) -> SFTRecord:
     removes work the extractor would otherwise have to do, and removes a way for
     the model to waste tokens on explanation it was told not to give.
     """
-    messages = build_messages(example["question"], schema_text)
+    messages = prompt.build_messages(example["question"], schema_text)
     messages.append({"role": "assistant", "content": normalise_sql(example["sql"])})
 
     meta = {k: example[k] for k in METADATA_FIELDS if k in example and k != "id"}
@@ -127,9 +125,12 @@ def build_record(example: dict[str, Any], schema_text: str) -> SFTRecord:
 
 
 def build_records(
-    examples: Iterable[dict[str, Any]], schema_text: str
+    examples: Iterable[dict[str, Any]], schema_text: str,
+    prompt: ModuleType = prompt_v1,
 ) -> list[SFTRecord]:
-    return [build_record(e, schema_text) for e in examples]
+    """``prompt`` is the prompt module to render with: ``src.model.prompt`` (v1,
+    the default, shared with the frozen baseline) or ``src.model.prompt_v2``."""
+    return [build_record(e, schema_text, prompt) for e in examples]
 
 
 def file_hash(path) -> str:
@@ -153,14 +154,14 @@ def content_hash(records: list[SFTRecord]) -> str:
     return digest.hexdigest()[:16]
 
 
-def describe_format() -> dict[str, Any]:
+def describe_format(prompt: ModuleType = prompt_v1) -> dict[str, Any]:
     """Recorded alongside the dataset so training can verify what it received."""
     return {
         "task": "question + full schema -> PostgreSQL SQL",
         "format": "chat messages (system, user, assistant)",
-        "prompt_version": PROMPT_VERSION,
-        "prompt_fingerprint": prompt_fingerprint(),
-        "prompt_source": "src/model/prompt.py (shared with the Phase 5 baseline)",
+        "prompt_version": prompt.PROMPT_VERSION,
+        "prompt_fingerprint": prompt.prompt_fingerprint(),
+        "prompt_source": prompt.__name__.replace(".", "/") + ".py",
         "schema_mode": "full_schema_no_retrieval",
         "schema_rationale": (
             "Phase 6 measured retrieval on this 12-table schema: strict accuracy "
@@ -168,5 +169,5 @@ def describe_format() -> dict[str, Any]:
         ),
         "assistant_content": "gold SQL only, whitespace-normalised, no fence, no prose",
         "thinking_mode": "disabled via /no_think, matching baseline inference",
-        "system_prompt_chars": len(SYSTEM_PROMPT),
+        "system_prompt_chars": len(prompt.SYSTEM_PROMPT),
     }

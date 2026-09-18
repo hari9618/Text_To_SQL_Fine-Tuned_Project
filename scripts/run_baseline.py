@@ -41,12 +41,10 @@ from src.model.base_model import (  # noqa: E402
     OracleModel,
 )
 from src.model.schema_context import build_schema_context  # noqa: E402
+from src.benchmark_versions import add_version_argument, get as get_version  # noqa: E402
 from src.sql.config import PROJECT_ROOT, ConfigError, app_config  # noqa: E402
 from src.sql.executor import load_schema_info, read_only_connection  # noqa: E402
 
-TEST_SET = PROJECT_ROOT / "dataset" / "test" / "test.jsonl"
-BASELINE_DIR = PROJECT_ROOT / "experiments" / "baseline"
-RETRIEVAL_DIR = PROJECT_ROOT / "experiments" / "retrieval"
 
 
 def parse_args() -> argparse.Namespace:
@@ -79,6 +77,7 @@ def parse_args() -> argparse.Namespace:
                         "provider limits.")
     p.add_argument("--resume", action="store_true",
                    help="reuse generations already checkpointed on disk")
+    add_version_argument(p)
     p.add_argument("--tag", default=None,
                    help="suffix for output files, e.g. 'smoke'")
     return p.parse_args()
@@ -86,6 +85,11 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
+    version = get_version(args.version)
+    prompt = version.prompt()
+    TEST_SET = version.split("test")
+    BASELINE_DIR = version.experiments_root / "baseline"
+    RETRIEVAL_DIR = version.experiments_root / "retrieval"
 
     if not TEST_SET.exists():
         print(f"[error] test split not found: {TEST_SET}", file=sys.stderr)
@@ -103,6 +107,7 @@ def main() -> int:
     print("=" * 72)
     print("PHASE 4 — BASE MODEL BENCHMARK")
     print("=" * 72)
+    print(f"benchmark       : {version.name}   prompt {prompt.PROMPT_VERSION} {prompt.prompt_fingerprint()}")
     print(f"test split      : {TEST_SET.relative_to(PROJECT_ROOT)}")
     print(f"examples        : {len(examples):,}"
           f"{f' (limited from full split)' if args.limit else ''}")
@@ -120,6 +125,7 @@ def main() -> int:
                 params=InferenceParams(
                     temperature=args.temperature, max_tokens=args.max_tokens
                 ),
+                prompt=prompt,
             )
         except RuntimeError as exc:
             print(f"\n[error] {exc}", file=sys.stderr)
@@ -174,7 +180,8 @@ def main() -> int:
                   f"{len(schema_text):,} chars (hash {schema_fp})")
 
         metadata = build_run_metadata(
-            model, TEST_SET, conn, schema_fp, schema_text, schema_info.tables
+            model, TEST_SET, conn, schema_fp, schema_text, schema_info.tables,
+            prompt=prompt,
         )
         print(f"data fingerprint: {metadata['database']['data_fingerprint']}")
         print(f"DATA_AS_OF      : {metadata['database']['data_as_of']}")

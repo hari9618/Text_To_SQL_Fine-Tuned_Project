@@ -1,0 +1,27 @@
+{
+  "phase": 10,
+  "benchmark_version": "v2",
+  "purpose": "inputs for remote generation; scoring happens locally",
+  "prompt": {
+    "version": "v2",
+    "fingerprint": "4e72cc5f722ce436"
+  },
+  "schema": {
+    "mode": "full",
+    "fingerprint": "d03619e711661bc5",
+    "full_schema_fingerprint": "d03619e711661bc5",
+    "characters": 5455,
+    "retrieval": null
+  },
+  "ablation_configuration": 3,
+  "questions": {
+    "count": 453,
+    "fingerprint": "3d5a23ed788fc757",
+    "source": "dataset/v2/test/test.jsonl",
+    "source_fingerprint": "d7ec17963f69c87d",
+    "gold_sql_included": false
+  },
+  "baseline_to_beat": {
+    "note": "base model not yet measured on this benchmark version"
+  }
+}

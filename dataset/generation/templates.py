@@ -1678,16 +1678,16 @@ def templates_by_difficulty() -> dict[str, list[Template]]:
     return grouped
 
 
-def validate_unique_ids() -> None:
+def validate_unique_ids(templates: list[Template] | None = None) -> None:
     """Fail fast if two templates share an id — that would corrupt the split."""
     seen: set[str] = set()
-    for template in ALL_TEMPLATES:
+    for template in (ALL_TEMPLATES if templates is None else templates):
         if template.template_id in seen:
             raise ValueError(f"duplicate template_id: {template.template_id}")
         seen.add(template.template_id)
 
 
-def validate_phrasings_cover_sql_slots() -> None:
+def validate_phrasings_cover_sql_slots(templates: list[Template] | None = None) -> None:
     """Every phrasing must mention every slot the SQL depends on.
 
     If the SQL filters on {days} but a phrasing does not mention it, then all
@@ -1696,7 +1696,7 @@ def validate_phrasings_cover_sql_slots() -> None:
     answers — unanswerable, and it silently corrupts execution-based scoring.
     """
     problems: list[str] = []
-    for template in ALL_TEMPLATES:
+    for template in (ALL_TEMPLATES if templates is None else templates):
         sql_slots = set(SLOT_PATTERN.findall(template.sql))
         for i, question in enumerate(template.questions):
             missing = sql_slots - set(SLOT_PATTERN.findall(question))
@@ -1711,10 +1711,10 @@ def validate_phrasings_cover_sql_slots() -> None:
         )
 
 
-def validate_no_question_collisions() -> None:
+def validate_no_question_collisions(templates: list[Template] | None = None) -> None:
     """Two templates must not share a phrasing unless their SQL is identical."""
     by_question: dict[str, list[Template]] = {}
-    for template in ALL_TEMPLATES:
+    for template in (ALL_TEMPLATES if templates is None else templates):
         for question in template.questions:
             by_question.setdefault(question, []).append(template)
 
@@ -1730,7 +1730,9 @@ def validate_no_question_collisions() -> None:
         )
 
 
-def validate_all() -> None:
-    validate_unique_ids()
-    validate_phrasings_cover_sql_slots()
-    validate_no_question_collisions()
+def validate_all(templates: list[Template] | None = None) -> None:
+    """Run every structural check. ``templates`` defaults to the v1 list;
+    ``templates_v2`` passes its own so the checks are shared, not copied."""
+    validate_unique_ids(templates)
+    validate_phrasings_cover_sql_slots(templates)
+    validate_no_question_collisions(templates)

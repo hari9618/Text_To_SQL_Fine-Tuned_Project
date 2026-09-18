@@ -36,6 +36,7 @@ Usage (from the project root):
 
 from __future__ import annotations
 
+import argparse
 import json
 import random
 import sys
@@ -48,7 +49,7 @@ import psycopg
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from dataset.generation.templates import validate_all  # noqa: E402
+from src.benchmark_versions import add_version_argument, get as get_version  # noqa: E402
 from src.constants import DATA_AS_OF, DATA_AS_OF_SQL  # noqa: E402
 from src.sql import validator  # noqa: E402
 from src.sql.config import PROJECT_ROOT, ConfigError, app_config  # noqa: E402
@@ -63,13 +64,6 @@ RANDOM_SEED = 20260808
 SPLIT_RATIOS = {"train": 0.70, "validation": 0.15, "test": 0.15}
 STATEMENT_TIMEOUT_MS = 30_000
 
-INPUT_PATH = PROJECT_ROOT / "dataset" / "generated" / "benchmark.jsonl"
-VALIDATED_DIR = PROJECT_ROOT / "dataset" / "validated"
-SPLIT_DIRS = {
-    "train": PROJECT_ROOT / "dataset" / "train",
-    "validation": PROJECT_ROOT / "dataset" / "validation",
-    "test": PROJECT_ROOT / "dataset" / "test",
-}
 
 # Human-readable explanation for every rejection category, carried into the
 # report so the numbers are never bare.
@@ -218,15 +212,50 @@ def assign_splits(groups: list[Group], rng: random.Random) -> dict[str, str]:
 # Validation
 # ---------------------------------------------------------------------------
 
+def pinned_split_of_group(groups: list[Group], version) -> dict[str, str]:
+    """v2 and later inherit the v1 split; new templates go to train.
+
+    A greedy re-assignment would move templates between splits whenever a
+    template is added or its size changes, and the test set would no longer be
+    the same 48 templates the frozen numbers were measured on. So the split is
+    read from the v1 files, template by template, and only templates v1 never
+    had are placed - always in train, so nothing new can leak into test.
+    """
+    v1 = get_version("v1")
+    split_of_template: dict[str, str] = {}
+    for name in SPLIT_RATIOS:
+        for row in load_examples(v1.split(name)):
+            split_of_template[row["template_id"]] = name
+
+    assignment: dict[str, str] = {}
+    for group in groups:
+        known = {split_of_template[t] for t in group.template_ids if t in split_of_template}
+        if len(known) > 1:
+            raise ValueError(
+                f"group {group.group_id} merges templates from different v1 splits "
+                f"{sorted(known)}: {group.template_ids}")
+        assignment[group.group_id] = known.pop() if known else "train"
+    return assignment
+
+
 def main() -> int:
+    parser = argparse.ArgumentParser(description="Validate and split the benchmark")
+    add_version_argument(parser)
+    args = parser.parse_args()
+    version = get_version(args.version)
+    input_path = version.generated
+    validated_dir = version.validated_dir
+    split_paths = {name: version.split(name) for name in SPLIT_RATIOS}
+
     print("=" * 70)
     print("PHASE 3 — DATASET VALIDATION")
+    print(f"benchmark version: {version.name}")
     print("=" * 70)
 
     # --- 0. template-level validators (requirement 6) -----------------------
     print("\n[1/7] Template validators...")
     try:
-        validate_all()
+        version.templates().validate_all()
         print("      unique ids, slot coverage, question collisions: PASS")
         template_validators_passed = True
     except ValueError as exc:
@@ -234,12 +263,12 @@ def main() -> int:
         template_validators_passed = False
         return 1
 
-    if not INPUT_PATH.exists():
-        print(f"[error] {INPUT_PATH} not found. Run generate_benchmark.py first.",
+    if not input_path.exists():
+        print(f"[error] {input_path} not found. Run generate_benchmark.py first.",
               file=sys.stderr)
         return 2
 
-    examples = load_examples(INPUT_PATH)
+    examples = load_examples(input_path)
     print(f"      loaded {len(examples):,} generated examples")
 
     try:
@@ -416,8 +445,12 @@ def main() -> int:
           f"{len({e['template_id'] for e in accepted})} templates "
           f"({len(merged_groups)} merged by identical SQL)")
 
-    rng = random.Random(RANDOM_SEED)
-    split_of_group = assign_splits(groups, rng)
+    if version.is_v1:
+        rng = random.Random(RANDOM_SEED)
+        split_of_group = assign_splits(groups, rng)
+    else:
+        split_of_group = pinned_split_of_group(groups, version)
+        print("      split pinned to v1; new templates -> train")
 
     splits: dict[str, list[dict[str, Any]]] = {s: [] for s in SPLIT_RATIOS}
     for example in accepted:
@@ -465,11 +498,12 @@ def main() -> int:
     leakage_detected = any(v > 0 for v in leakage.values())
 
     # --- 7. write outputs --------------------------------------------------
-    VALIDATED_DIR.mkdir(parents=True, exist_ok=True)
-    write_jsonl(VALIDATED_DIR / "validated.jsonl", accepted)
-    write_jsonl(VALIDATED_DIR / "rejected.jsonl", rejections)
-    for name, directory in SPLIT_DIRS.items():
-        write_jsonl(directory / f"{name}.jsonl", splits[name])
+    validated_dir.mkdir(parents=True, exist_ok=True)
+    write_jsonl(validated_dir / "validated.jsonl", accepted)
+    write_jsonl(validated_dir / "rejected.jsonl", rejections)
+    for name, path in split_paths.items():
+        path.parent.mkdir(parents=True, exist_ok=True)
+        write_jsonl(path, splits[name])
 
     # --- 8. report (requirement 12) ----------------------------------------
     per_template: dict[str, dict[str, Any]] = {}
@@ -501,6 +535,8 @@ def main() -> int:
 
     report: dict[str, Any] = {
         "phase": 3,
+        "benchmark_version": version.name,
+        "split_policy": "greedy_stratified" if version.is_v1 else "pinned_to_v1",
         "random_seed": RANDOM_SEED,
         "data_as_of": DATA_AS_OF.isoformat(),
         "data_as_of_sql": DATA_AS_OF_SQL,
@@ -551,7 +587,7 @@ def main() -> int:
         "by_template": per_template,
     }
 
-    (VALIDATED_DIR / "validation_report.json").write_text(
+    (validated_dir / "validation_report.json").write_text(
         json.dumps(report, indent=2), encoding="utf-8"
     )
 
@@ -568,7 +604,7 @@ def main() -> int:
         print(f"        {reason:<28}{count:>6,}  "
               f"{REJECTION_REASONS.get(reason, '')[:40]}")
     print("=" * 70)
-    print(f"\nWritten to {VALIDATED_DIR.relative_to(PROJECT_ROOT)}/ and split dirs")
+    print(f"\nWritten to {validated_dir.relative_to(PROJECT_ROOT)}/ and split dirs")
     return 0
 
 

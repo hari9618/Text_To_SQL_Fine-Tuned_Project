@@ -49,14 +49,13 @@ from src.model.base_model import (  # noqa: E402
     extract_sql,
 )
 from src.model.schema_context import build_schema_context  # noqa: E402
+from src.benchmark_versions import add_version_argument, get as get_version  # noqa: E402
 from src.sql.config import PROJECT_ROOT, ConfigError, app_config  # noqa: E402
 from src.sql.executor import load_schema_info, read_only_connection  # noqa: E402
 
-TEST_SET = PROJECT_ROOT / "dataset" / "test" / "test.jsonl"
-FULL_SCHEMA_DIR = PROJECT_ROOT / "experiments" / "finetuned"
-RETRIEVED_DIR = PROJECT_ROOT / "experiments" / "finetuned_retrieval"
-ADAPTER_DIR = PROJECT_ROOT / "models" / "finetuned"
-BASELINE_SUMMARY = PROJECT_ROOT / "experiments" / "baseline" / "summary.json"
+# Resolved per --version in main(): v1 is the frozen layout, v2 lives under
+# experiments/v2/ and models/finetuned_v2/.
+TEST_SET = FULL_SCHEMA_DIR = RETRIEVED_DIR = ADAPTER_DIR = BASELINE_SUMMARY = None
 
 EXPECTED_PROMPT_FP = "8288e41a496531a9"
 EXPECTED_SCHEMA_FP = "d03619e711661bc5"
@@ -121,13 +120,15 @@ def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Phase 10 fine-tuned model scoring")
     p.add_argument("--predictions", required=True,
                    help="predictions.jsonl downloaded from the GPU host")
+    add_version_argument(p)
     p.add_argument("--tag", default=None, help="suffix for output files")
     p.add_argument("--allow-partial", action="store_true",
                    help="score even if predictions cover fewer than all examples")
     return p.parse_args()
 
 
-def output_dir_for(header: dict) -> tuple[Path, str]:
+def output_dir_for(header: dict, full_dir: Path, retrieved_dir: Path,
+                   baseline_dir: Path | None = None) -> tuple[Path, str]:
     """Where results go, decided by what the GPU host says it ran.
 
     Configuration 3 and configuration 4 differ only in the schema each question
@@ -135,9 +136,13 @@ def output_dir_for(header: dict) -> tuple[Path, str]:
     header's declared mode is what stops one silently overwriting the other.
     """
     mode = (header or {}).get("schema_mode", "full")
+    # A file generated without an adapter is the base-model row of the
+    # ablation; it must never land in the fine-tuned directory.
+    if (header or {}).get("model_kind") == "base_4bit" and baseline_dir is not None:
+        return baseline_dir, "base"
     if mode == "retrieved":
-        return RETRIEVED_DIR, mode
-    return FULL_SCHEMA_DIR, mode
+        return retrieved_dir, mode
+    return full_dir, mode
 
 
 def load_predictions(path: Path) -> tuple[dict[str, dict], dict]:
@@ -158,6 +163,14 @@ def load_predictions(path: Path) -> tuple[dict[str, dict], dict]:
 
 def main() -> int:
     args = parse_args()
+    version = get_version(args.version)
+    prompt = version.prompt()
+    TEST_SET = version.split("test")
+    FULL_SCHEMA_DIR = version.experiments_root / "finetuned"
+    RETRIEVED_DIR = version.experiments_root / "finetuned_retrieval"
+    ADAPTER_DIR = PROJECT_ROOT / "models" / ("finetuned" if version.is_v1 else f"finetuned_{version.name}")
+    BASELINE_SUMMARY = version.experiments_root / "baseline" / "summary.json"
+    expected_prompt_fp = EXPECTED_PROMPT_FP if version.is_v1 else prompt.prompt_fingerprint()
 
     pred_path = Path(args.predictions)
     if not pred_path.exists():
@@ -173,6 +186,7 @@ def main() -> int:
     print("=" * 72)
     print("PHASE 10 - FINE-TUNED MODEL BENCHMARK")
     print("=" * 72)
+    print(f"benchmark       : {version.name}   prompt {prompt.PROMPT_VERSION} {prompt.prompt_fingerprint()}")
 
     preds, header = load_predictions(pred_path)
     examples = load_examples(TEST_SET)
@@ -183,15 +197,26 @@ def main() -> int:
 
     # The remote host echoes back the fingerprints it actually used. If it
     # rendered a different prompt or schema, the comparison is void.
-    OUTPUT_DIR, schema_mode = output_dir_for(header)
+    OUTPUT_DIR, schema_mode = output_dir_for(header, FULL_SCHEMA_DIR, RETRIEVED_DIR,
+                                             BASELINE_SUMMARY.parent)
+    is_base_run = schema_mode == "base"
+    if is_base_run and version.is_v1:
+        print("[abort] the v1 base model is the frozen HF-inference baseline; a 4-bit "
+              "Kaggle base run is only defined for v2 and later", file=sys.stderr)
+        return 2
     print(f"schema mode     : {schema_mode}"
           f"{'  (ablation configuration 4)' if schema_mode == 'retrieved' else ''}")
 
     if header:
         got = header.get("prompt_fingerprint")
-        if got != EXPECTED_PROMPT_FP:
+        declared = header.get("benchmark_version", "v1")
+        if declared != version.name:
+            print(f"[abort] predictions declare benchmark {declared!r}, but scoring "
+                  f"--version {version.name}", file=sys.stderr)
+            return 2
+        if got != expected_prompt_fp:
             print(f"[abort] remote prompt_fingerprint = {got}, expected "
-                  f"{EXPECTED_PROMPT_FP}.\n"
+                  f"{expected_prompt_fp}.\n"
                   f"        The fine-tuned model did not see what the baseline "
                   f"saw; the comparison would be invalid.", file=sys.stderr)
             return 2
@@ -260,7 +285,18 @@ def main() -> int:
     else:
         print(f"[warning] {meta_path} missing; run metadata will be thin")
 
-    model = ReplayModel(adapter_meta)
+    model = ReplayModel(None if is_base_run else adapter_meta)
+    if is_base_run:
+        model.describe = lambda: {  # type: ignore[method-assign]
+            "kind": "base_model_4bit_replayed", "model_id": DEFAULT_MODEL_ID,
+            "model_revision": header.get("revision"), "fine_tuned": False,
+            "provider": "kaggle-t4-local-generation",
+            "quantisation": {"load_in_4bit": True, "quant_type": "nf4",
+                             "double_quant": True, "compute_dtype": "float16"},
+            "note": ("Base model without any adapter, generated on the same "
+                     "hardware and decoding as the fine-tuned run. Unlike the v1 "
+                     "baseline (HF inference, full precision) this is a 4-bit load."),
+            "generation_host": {"gpu": header.get("gpu")}}
 
     with read_only_connection(cfg) as conn:
         schema_text, schema_fp = build_schema_context(conn)
@@ -272,9 +308,14 @@ def main() -> int:
             return 2
 
         metadata = build_run_metadata(
-            model, TEST_SET, conn, schema_fp, schema_text, schema_info.tables
+            model, TEST_SET, conn, schema_fp, schema_text, schema_info.tables,
+            prompt=prompt,
         )
-        if schema_mode == "retrieved":
+        if is_base_run:
+            metadata["schema_context"]["note"] = (
+                f"Benchmark {version.name} ablation configuration 1: base model, "
+                "full schema, no retrieval, no repair, 4-bit on a Kaggle T4.")
+        elif schema_mode == "retrieved":
             metadata["schema_context"] = {
                 "mode": "retrieved_keyword_v1",
                 "fingerprint": header.get("schema_fingerprint"),
@@ -327,7 +368,7 @@ def main() -> int:
     summary_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
 
     if not args.tag:
-        (OUTPUT_DIR / "FINETUNED_REPORT.md").write_text(
+        (OUTPUT_DIR / ("BASELINE_REPORT.md" if is_base_run else "FINETUNED_REPORT.md")).write_text(
             render_report(summary, metadata, results, drift=drift),
             encoding="utf-8")
 
@@ -349,7 +390,7 @@ def main() -> int:
         print(f"  {name:<22}{count:>5}")
 
     # ---- head to head ------------------------------------------------------
-    if BASELINE_SUMMARY.exists():
+    if BASELINE_SUMMARY.exists() and not is_base_run:
         base = json.loads(BASELINE_SUMMARY.read_text(encoding="utf-8"))
         bt, be = base["totals"], base["error_rates"]
         bpa = base["projection_analysis"]

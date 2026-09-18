@@ -182,8 +182,13 @@ class HFInferenceModel(TextToSQLModel):
         params: InferenceParams | None = None,
         max_retries: int = 6,
         timeout_s: float = 120.0,
+        prompt=None,
     ) -> None:
+        """``prompt`` is the prompt module (``src.model.prompt`` by default,
+        ``src.model.prompt_v2`` for the v2 benchmark). Passed in rather than
+        imported so one model class serves every prompt version."""
         from huggingface_hub import InferenceClient
+        from src.model import prompt as prompt_v1
 
         token = os.getenv("HF_TOKEN", "").strip()
         if not token:
@@ -195,6 +200,7 @@ class HFInferenceModel(TextToSQLModel):
 
         self.model_id = model_id
         self.provider = provider
+        self.prompt = prompt or prompt_v1
         self.params = params or InferenceParams()
         self.max_retries = max_retries
         self._client = InferenceClient(
@@ -220,9 +226,7 @@ class HFInferenceModel(TextToSQLModel):
         return self._revision
 
     def generate(self, question: str, schema: str) -> GenerationResult:
-        from src.model.prompt import build_messages
-
-        return self.generate_messages(build_messages(question, schema))
+        return self.generate_messages(self.prompt.build_messages(question, schema))
 
     def generate_messages(self, messages: list[dict[str, str]]) -> GenerationResult:
         """Send pre-built chat messages.

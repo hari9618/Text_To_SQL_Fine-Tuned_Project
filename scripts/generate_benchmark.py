@@ -22,6 +22,7 @@ Usage (from the project root):
 
 from __future__ import annotations
 
+import argparse
 import json
 import random
 import sys
@@ -34,17 +35,14 @@ import psycopg
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from dataset.generation.templates import (  # noqa: E402
-    ALL_TEMPLATES,
-    Template,
-    validate_all,
-)
+from dataset.generation.templates import Template  # noqa: E402
 from dataset.generation.value_pools import (  # noqa: E402
     ValuePools,
     load_value_pools,
     missing_pools,
     sql_escape,
 )
+from src.benchmark_versions import add_version_argument, get as get_version  # noqa: E402
 from src.sql.config import PROJECT_ROOT, ConfigError, app_config  # noqa: E402
 
 RANDOM_SEED = 20260808
@@ -53,8 +51,6 @@ RANDOM_SEED = 20260808
 # purely because its slots multiply out.
 MAX_COMBINATIONS_PER_TEMPLATE = 120
 
-OUTPUT_PATH = PROJECT_ROOT / "dataset" / "generated" / "benchmark.jsonl"
-STATS_PATH = PROJECT_ROOT / "dataset" / "generated" / "statistics.json"
 
 
 def slot_combinations(
@@ -116,9 +112,10 @@ def render(template: Template, values: dict[str, Any], phrasing: int) -> dict[st
     }
 
 
-def generate(pools: ValuePools, rng: random.Random) -> Iterator[dict[str, Any]]:
+def generate(templates: list[Template], pools: ValuePools,
+             rng: random.Random) -> Iterator[dict[str, Any]]:
     """Yield every benchmark example, in template order."""
-    for template in ALL_TEMPLATES:
+    for template in templates:
         for values in slot_combinations(template, pools, rng):
             # Every phrasing of every combination. The SQL repeats across
             # phrasings, which is the point: the model must learn that three
@@ -127,15 +124,17 @@ def generate(pools: ValuePools, rng: random.Random) -> Iterator[dict[str, Any]]:
                 yield render(template, values, phrasing)
 
 
-def build_statistics(examples: list[dict[str, Any]]) -> dict[str, Any]:
+def build_statistics(examples: list[dict[str, Any]], templates: list[Template],
+                     version: str) -> dict[str, Any]:
     difficulty = Counter(e["difficulty"] for e in examples)
     domain = Counter(e["domain"] for e in examples)
     features = Counter(f for e in examples for f in e["query_type"])
     per_template = Counter(e["template_id"] for e in examples)
 
     return {
+        "benchmark_version": version,
         "total_examples": len(examples),
-        "total_templates": len(ALL_TEMPLATES),
+        "total_templates": len(templates),
         "unique_questions": len({e["question"] for e in examples}),
         "unique_sql": len({e["sql"] for e in examples}),
         "by_difficulty": dict(difficulty.most_common()),
@@ -151,7 +150,15 @@ def build_statistics(examples: list[dict[str, Any]]) -> dict[str, Any]:
 
 
 def main() -> int:
-    validate_all()
+    parser = argparse.ArgumentParser(description="Expand templates into the benchmark")
+    add_version_argument(parser)
+    args = parser.parse_args()
+    version = get_version(args.version)
+    templates_mod = version.templates()
+    templates: list[Template] = templates_mod.ALL_TEMPLATES
+    templates_mod.validate_all()
+    output_path, stats_path = version.generated, version.statistics
+    print(f"benchmark version  : {version.name}  ({version.templates_module})")
 
     try:
         cfg = app_config()
@@ -169,7 +176,7 @@ def main() -> int:
     # Catch a template referring to a slot with no value pool before generating
     # thousands of examples that would all be broken the same way.
     problems: list[str] = []
-    for template in ALL_TEMPLATES:
+    for template in templates:
         absent = missing_pools(template.slots, pools)
         if absent:
             problems.append(f"  {template.template_id}: unknown slots {absent}")
@@ -179,17 +186,17 @@ def main() -> int:
         return 1
 
     rng = random.Random(RANDOM_SEED)
-    examples = list(generate(pools, rng))
+    examples = list(generate(templates, pools, rng))
     for i, example in enumerate(examples, start=1):
         example["id"] = f"bench-{i:06d}"
 
-    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with OUTPUT_PATH.open("w", encoding="utf-8") as fh:
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with output_path.open("w", encoding="utf-8") as fh:
         for example in examples:
             fh.write(json.dumps(example, ensure_ascii=False) + "\n")
 
-    stats = build_statistics(examples)
-    STATS_PATH.write_text(json.dumps(stats, indent=2), encoding="utf-8")
+    stats = build_statistics(examples, templates, version.name)
+    stats_path.write_text(json.dumps(stats, indent=2), encoding="utf-8")
 
     print(f"Templates          : {stats['total_templates']}")
     print(f"Examples generated : {stats['total_examples']:,}")
@@ -201,7 +208,7 @@ def main() -> int:
     print("\nBy domain:")
     for name, count in stats["by_domain"].items():
         print(f"  {name:<12}{count:>8,}")
-    print(f"\nWritten to {OUTPUT_PATH.relative_to(PROJECT_ROOT)}")
+    print(f"\nWritten to {output_path.relative_to(PROJECT_ROOT)}")
     return 0
 
 
