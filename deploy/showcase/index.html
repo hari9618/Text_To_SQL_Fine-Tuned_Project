@@ -86,6 +86,45 @@ footer{max-width:1240px;margin:0 auto;padding:0 20px 44px;color:var(--muted);fon
 .hidden{display:none!important}
 h2{font-size:16px;margin:26px 0 10px}
 p{max-width:78ch}
+
+/* live tab */
+.ask{display:flex;gap:10px;align-items:stretch}
+.ask input[type=text]{flex:1;min-width:0;padding:12px 14px;border-radius:10px;border:1px solid var(--line);
+  background:var(--panel);color:var(--ink);font:inherit;font-size:15px}
+.ask input[type=text]:focus{outline:2px solid var(--accent);outline-offset:-1px}
+.btn{padding:0 18px;border-radius:10px;border:0;background:var(--accent);color:#fff;font:inherit;
+  font-weight:600;cursor:pointer;white-space:nowrap}
+.btn:disabled{opacity:.55;cursor:wait}
+.chips{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0 0}
+.chip{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;
+  padding:5px 11px;font:inherit;font-size:12.5px;cursor:pointer}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.chip.danger{border-style:dashed}
+.status{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:10px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block}
+.dot.ok{background:var(--ok)}.dot.bad{background:var(--bad)}.dot.wait{background:var(--warn)}
+.banner{background:var(--accent-soft);border:1px solid var(--line);border-radius:10px;padding:12px 14px;
+  font-size:13.5px;margin-bottom:16px}
+.banner b{color:var(--accent)}
+.trace{list-style:none;margin:0;padding:0}
+.trace li{display:grid;grid-template-columns:26px 1fr;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.trace li:last-child{border-bottom:0}
+.trace .ic{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;background:var(--code);color:var(--muted)}
+.trace .ic.ok{background:var(--ok-soft);color:var(--ok)}
+.trace .ic.no{background:var(--bad-soft);color:var(--bad)}
+.trace .ic.skip{opacity:.5}
+.trace .ic.none{background:none}
+.trace .t{font-weight:600;font-size:13.5px}
+.trace .s{color:var(--muted);font-size:12.5px;margin-top:2px}
+.rows{max-height:380px;overflow:auto;border:1px solid var(--line);border-radius:8px;margin-top:8px}
+.rows table{font-size:13px}
+.rows th{position:sticky;top:0;background:var(--panel)}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--accent);
+  border-radius:50%;animation:sp .8s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.kv{display:flex;gap:16px;flex-wrap:wrap;color:var(--muted);font-size:12.5px;margin-top:10px}
+.kv b{color:var(--ink);font-weight:600}
 </style>
 </head>
 <body>
@@ -102,11 +141,15 @@ p{max-width:78ch}
     </p>
     <div class="links">
       <a href="https://huggingface.co/hari-krishna-ai/qwen3-8b-text2sql-qlora">📦 Model</a>
+      <a href="https://huggingface.co/datasets/hari-krishna-ai/enterprise-text-to-sql-benchmark">📊 Dataset</a>
+      <a href="https://github.com/hari9618/Text_To_SQL_Fine-Tuned_Project">🐙 Code</a>
+      <a href="https://text2sql-api-mc8q.onrender.com/docs">⚙️ API docs</a>
       <span class="count">453 questions · 5 configurations · every prediction below is real</span>
     </div>
   </div>
   <nav>
-    <button id="tab-explore" aria-selected="true">Explorer</button>
+    <button id="tab-live" aria-selected="true">Try it live</button>
+    <button id="tab-explore" aria-selected="false">Explorer</button>
     <button id="tab-bench" aria-selected="false">Benchmark</button>
     <button id="tab-how" aria-selected="false">How it works</button>
   </nav>
@@ -114,7 +157,32 @@ p{max-width:78ch}
 
 <main>
 
-<section id="panel-explore">
+<section id="panel-live">
+  <div class="banner">
+    Ask the <b>live pipeline</b> anything about the database — sales, products, logistics, HR.
+    The SQL is generated, statically validated, executed against a read-only PostgreSQL session,
+    and repaired once if it fails. You see every step.
+    <br><br>
+    <b>Honest note:</b> free hosting has no GPU, so this text box is served by the <b>base</b>
+    Qwen3-8B (10.82 % strict on the benchmark), not the fine-tuned adapter (52.10 %). For any of
+    the 453 benchmark questions, the fine-tuned model's <i>recorded</i> answer is shown next to the
+    live one so you can compare. Try the dashed chip to watch the guardrails refuse a write.
+  </div>
+
+  <div class="card">
+    <form class="ask" id="ask">
+      <input type="text" id="question" maxlength="2000" autocomplete="off"
+             placeholder="e.g. How many customers are based in India?">
+      <button class="btn" id="run" type="submit">Run</button>
+    </form>
+    <div class="chips" id="chips"></div>
+    <div class="status"><span class="dot" id="hdot"></span><span id="hstat">checking the API…</span></div>
+  </div>
+
+  <div id="live-out" style="margin-top:18px"></div>
+</section>
+
+<section id="panel-explore" class="hidden">
   <div class="controls">
     <input type="search" id="q" placeholder="Search 453 questions or SQL…">
     <select id="tier">
@@ -178,7 +246,9 @@ p{max-width:78ch}
       </table></div>
       <p class="lede" style="margin-top:12px">The <code>hard</code> tier — multi-table joins and
         subqueries — is where reasoning genuinely improved. <code>medium</code> did not move at
-        all, and that is unexplained rather than glossed over.</p>
+        all: a failure analysis traces 24 of its 25 remaining misses to one template whose gold
+        renders months as <code>EXTRACT(MONTH)</code> while the model writes
+        <code>DATE_TRUNC</code> — same 12 rows, different representation.</p>
     </div>
   </div>
 
@@ -256,7 +326,11 @@ SELECT COUNT(customer_id) FROM customers WHERE country = 'India';</pre>
     <ul class="lede">
       <li><b>Schema-specific.</b> It learned <i>this</i> database's conventions — that is most of
         the measured gain.</li>
-      <li><b>Roughly half its answers are still wrong.</b></li>
+      <li><b>Roughly half its answers are still wrong</b> under strict scoring. Classifying all
+        217 failures: 118 return the right rows under a different column set (the question never
+        said which columns), 91 are real logic errors — mostly business definitions the prompt
+        never states — and 8 are detectable errors. Row-level accuracy is 78 %; the strict number
+        stays the headline.</li>
       <li><b>Test questions are template-generated</b>, from the same generator as training. Real
         user phrasing — abbreviations, typos, ambiguity — is untested. The biggest caveat on the
         headline number.</li>
@@ -284,14 +358,185 @@ const TIER = {easy:"easy", medium:"medium", hard:"hard", very_hard:"very hard", 
 
 let DATA = null, filtered = [], selected = null;
 
-for (const n of ["explore","bench","how"]) {
+const TABS = ["live","explore","bench","how"];
+for (const n of TABS) {
   $("#tab-"+n).onclick = () => {
-    for (const o of ["explore","bench","how"]) {
+    for (const o of TABS) {
       $("#tab-"+o).setAttribute("aria-selected", String(o===n));
       $("#panel-"+o).classList.toggle("hidden", o!==n);
     }
   };
 }
+
+/* ------------------------------------------------------------ live tab -- */
+
+// The API is the Render deployment; ?api=http://localhost:8000 overrides it
+// for local testing. The page itself is static and holds no credentials.
+const API = new URLSearchParams(location.search).get("api")
+  || "https://text2sql-api-mc8q.onrender.com";
+
+const EXAMPLES = [
+  "How many customers are based in India?",
+  "Which five products have the highest unit price?",
+  "Show total revenue per month in 2024.",
+  "List the 10 most recent orders with the customer's name.",
+  "Which warehouses hold stock below the reorder level?",
+  "Average salary by department.",
+];
+const ATTACK = "Delete all customers from Germany.";
+
+function normQ(s) {
+  return String(s||"").toLowerCase().replace(/[^a-z0-9 ]+/g," ").replace(/\s+/g," ").trim();
+}
+let BENCH_INDEX = null;
+function benchLookup(q) {
+  if (!DATA) return null;
+  if (!BENCH_INDEX) {
+    BENCH_INDEX = new Map();
+    for (const e of DATA.examples) BENCH_INDEX.set(normQ(e.q), e);
+  }
+  return BENCH_INDEX.get(normQ(q)) || null;
+}
+
+function renderChips() {
+  const chips = EXAMPLES.map(q => `<button type="button" class="chip">${esc(q)}</button>`);
+  chips.push(`<button type="button" class="chip danger" title="Watch the guardrails refuse it">${esc(ATTACK)}</button>`);
+  chips.push(`<button type="button" class="chip" id="chip-bench" title="A real held-out question, so the fine-tuned model's recorded answer can be shown alongside">🎲 random benchmark question</button>`);
+  $("#chips").innerHTML = chips.join("");
+}
+$("#chips").onclick = ev => {
+  const el = ev.target.closest(".chip");
+  if (!el) return;
+  if (el.id === "chip-bench") {
+    if (!DATA) return;
+    const pool = DATA.examples.filter(e => e.ft?.ok);
+    const e = pool[Math.floor(Math.random()*pool.length)];
+    $("#question").value = e.q;
+  } else {
+    $("#question").value = el.textContent;
+  }
+  $("#ask").requestSubmit();
+};
+
+async function checkHealth() {
+  const dot = $("#hdot"), st = $("#hstat");
+  dot.className = "dot wait";
+  st.innerHTML = `<span class="spin"></span>waking the API — it sleeps on the free tier, first call can take ~50 s`;
+  try {
+    const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 90000);
+    const r = await fetch(API + "/health", {signal: ctl.signal}); clearTimeout(t);
+    const h = await r.json();
+    const ok = h.status === "ok";
+    dot.className = "dot " + (ok ? "ok" : "bad");
+    st.innerHTML = ok
+      ? `API up · model <code>${esc(h.model_id)}</code> (base) · database ${h.database?"connected":"down"} · schema <code>${esc(h.schema_fingerprint)}</code>`
+      : `API degraded — ${esc(h.detail || "see /health")}`;
+    return ok;
+  } catch (err) {
+    dot.className = "dot bad";
+    st.textContent = `API unreachable (${err.name === "AbortError" ? "timed out" : err.message}). Retry in a moment.`;
+    return false;
+  }
+}
+
+function step(state, title, sub) {
+  const ic = {ok:"✓", no:"✗", skip:"–", run:"…"}[state] || "·";
+  return `<li><span class="ic ${state}">${ic}</span><div><div class="t">${title}</div>${sub ? `<div class="s">${sub}</div>` : ""}</div></li>`;
+}
+
+function renderTrace(res) {
+  const a = res.attempts || [];
+  const first = a[0], second = a[1];
+  const items = [];
+  const gen = res.timings?.generation_ms;
+  items.push(step(first ? "ok" : "no", "1 · Generate SQL",
+    first ? `Qwen3-8B via Hugging Face inference · ${gen != null ? gen.toFixed(0) + " ms" : ""}` : esc(res.error||"no SQL produced")));
+  if (first) items.push(`<li><span class="ic none"></span><pre class="sql" style="margin:0">${hl(first.sql)}</pre></li>`);
+  const staticFail = first && !first.ok && first.stage === "static";
+  items.push(step(!first ? "skip" : staticFail ? "no" : "ok", "2 · Static validation",
+    staticFail ? `<b>refused before touching the database:</b> ${esc(first.error)}`
+               : "parses · single statement · read-only · every table exists"));
+  const execFail = first && !first.ok && first.stage === "execution";
+  items.push(step(!first || staticFail ? "skip" : execFail ? "no" : "ok", "3 · Execute (read-only session, 30 s timeout)",
+    execFail ? `PostgreSQL: ${esc(first.error)}` : (first && first.ok ? `${res.row_count ?? 0} row(s)${res.truncated ? " (truncated)" : ""} · ${(res.timings?.execution_ms ?? 0).toFixed(0)} ms` : "")));
+  if (first && !first.ok) {
+    if (second) {
+      items.push(step(second.ok ? "ok" : "no", "4 · Self-correction — the error fed back, one retry",
+        second.ok ? `repaired · ${(res.timings?.repair_generation_ms ?? 0).toFixed(0)} ms` : `still failing: ${esc(second.error)}`));
+      items.push(`<li><span class="ic none"></span><pre class="sql" style="margin:0">${hl(second.sql)}</pre></li>`);
+    } else if (staticFail) {
+      items.push(step("skip", "4 · Self-correction", "not attempted — a refused statement is not an error to repair"));
+    }
+  }
+  return `<ul class="trace">${items.join("")}</ul>`;
+}
+
+function renderRows(res) {
+  if (!res.ok) return "";
+  if (!res.rows?.length) return `<p class="lede" style="margin-top:8px">The query ran and returned no rows.</p>`;
+  const head = res.columns.map(c => `<th>${esc(c)}</th>`).join("");
+  const body = res.rows.slice(0, 50).map(r => `<tr>${r.map(v => `<td>${esc(v === null ? "NULL" : v)}</td>`).join("")}</tr>`).join("");
+  const more = res.rows.length > 50 ? `<p class="count" style="margin:6px 0 0">showing 50 of ${res.rows.length} returned rows</p>` : "";
+  return `<div class="rows"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>${more}`;
+}
+
+function renderBenchCompare(q) {
+  const e = benchLookup(q);
+  if (!e || !e.ft) return "";
+  const outcome = e.ft.ok ? "returned exactly the gold result set"
+    : e.ft.outcome === "wrong_result" ? "ran, but returned different rows" : `did not execute — ${esc(e.ft.err||e.ft.outcome)}`;
+  return `<div class="card" style="margin-top:14px">
+    <h3 style="margin:0 0 4px;font-size:14px">Fine-tuned model — recorded answer
+      <span class="b ${e.ft.ok?"ok":"no"}">${e.ft.ok?"correct":"wrong"}</span>
+      <span class="b tier">${TIER[e.d]||e.d}</span> <span class="b tier">${esc(e.id)}</span></h3>
+    <div class="why" style="color:var(--muted);font-size:12.5px">This is a held-out benchmark question. The adapter's answer below is from the frozen evaluation (not generated live — no GPU here); it ${outcome}.</div>
+    <pre class="sql">${hl(e.ft.sql)}</pre>
+    <details><summary>Gold SQL</summary><pre class="sql">${hl(e.gold)}</pre></details>
+  </div>`;
+}
+
+$("#ask").onsubmit = async ev => {
+  ev.preventDefault();
+  const q = $("#question").value.trim();
+  if (!q) return;
+  const btn = $("#run"), out = $("#live-out");
+  btn.disabled = true;
+  out.innerHTML = `<div class="card"><span class="spin"></span>Generating SQL… <span class="count" id="slow"></span></div>`;
+  const slow = setTimeout(() => { const s = $("#slow"); if (s) s.textContent = "— the free-tier server may be waking up; give it up to a minute"; }, 5000);
+  const t0 = performance.now();
+  try {
+    const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 120000);
+    const r = await fetch(API + "/query", {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({question: q, max_rows: 100, repair: true}), signal: ctl.signal,
+    });
+    clearTimeout(t);
+    const res = await r.json();
+    if (!r.ok) throw new Error(res.detail || `HTTP ${r.status}`);
+    const wall = performance.now() - t0;
+    out.innerHTML = `<div class="card">
+      <div class="badges" style="margin-bottom:10px">
+        <span class="b ${res.ok?"ok":"no"}">${res.ok ? "executed" : "failed — " + esc(res.error_stage || "")}</span>
+        ${res.repaired ? '<span class="b tier">self-corrected</span>' : ""}
+        <span class="b tier">${esc(res.model || "")}</span>
+      </div>
+      <div style="font-size:16px;font-weight:600;line-height:1.4;margin-bottom:10px">${esc(res.question)}</div>
+      ${renderTrace(res)}
+      ${renderRows(res)}
+      <div class="kv"><span>total <b>${(res.timings?.total_ms ?? wall).toFixed(0)} ms</b> server</span><span>round trip <b>${wall.toFixed(0)} ms</b></span></div>
+    </div>${renderBenchCompare(q)}`;
+    if ($("#hdot").className !== "dot ok") checkHealth();
+  } catch (err) {
+    out.innerHTML = `<div class="card"><span class="b no">request failed</span>
+      <p class="lede" style="margin-top:8px">${esc(err.name === "AbortError" ? "Timed out after 120 s. The free-tier server was probably asleep — try once more." : err.message)}</p></div>`;
+  } finally {
+    clearTimeout(slow);
+    btn.disabled = false;
+  }
+};
+
+renderChips();
+checkHealth();
 
 function matches(e) {
   const term = $("#q").value.trim().toLowerCase();

@@ -26,6 +26,13 @@ and still cannot hang the server.
 *A bad question is not a server error.* Generated SQL that fails to parse or
 fails to execute returns HTTP 200 with ``ok: false`` and the reason. Reserving
 5xx for genuine server faults is what makes the error rate meaningful.
+
+*Cross-origin calls are allowed from Hugging Face Spaces only.* The public
+demo is a static Space that calls this API from the browser, so the browser
+needs a CORS grant. It is scoped to ``*.hf.space`` plus whatever
+``CORS_ORIGINS`` lists, never ``*``: the API is read-only and unauthenticated,
+so the risk is not data exposure but someone else's page spending this
+deployment's inference quota.
 """
 
 from __future__ import annotations
@@ -37,6 +44,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 
 from src.api.backends import build_model
@@ -133,6 +141,20 @@ app = FastAPI(
         "fine-tuned adapter 50.99 %."
     ),
     lifespan=lifespan,
+)
+
+# Browsers enforce CORS, servers grant it. The static Space lives on a
+# *.hf.space origin; extra origins (a local build, a custom domain) come from
+# the environment as a comma-separated list. No credentials are involved, so
+# there is nothing a cross-site request could act on behalf of.
+_extra_origins = [o.strip() for o in os.getenv("CORS_ORIGINS", "").split(",") if o.strip()]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=_extra_origins,
+    allow_origin_regex=r"https://[a-z0-9-]+\.(static\.)?hf\.space",
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type"],
+    max_age=600,
 )
 
 

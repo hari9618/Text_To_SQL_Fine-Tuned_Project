@@ -7,7 +7,7 @@ sdk: static
 app_file: index.html
 pinned: false
 license: apache-2.0
-short_description: Did fine-tuning help? 453 held-out questions
+short_description: Ask the live pipeline; explore 453 scored answers
 models:
   - hari-krishna-ai/qwen3-8b-text2sql-qlora
 tags:
@@ -27,13 +27,21 @@ every query against a real database, never by string similarity.
 
 ## What this Space is
 
-An explorer over **every one of the 453 scored predictions**. For each question:
-the gold SQL, what each of the four measured configurations actually produced,
-and why the harness marked it right or wrong. Filter to the ones fine-tuning
-fixed, the ones it broke, or the ones that never executed.
+**Try it live** — type a business question and watch the full pipeline run:
+SQL generation, static validation, execution against a read-only PostgreSQL
+session, and one self-correction attempt if it fails. Every step is shown,
+including refusals (ask it to delete something).
 
-That is deliberately more useful than a live text box. The interesting claim
-here is not that a model emits SQL — it is *whether the SQL is right*, and how
+The live box calls the deployed API, which serves the **base** Qwen3-8B — free
+hosting has no GPU for the adapter. So the page is honest about it: for any of
+the 453 benchmark questions, the fine-tuned model's *recorded* answer is shown
+next to the live one.
+
+**Explorer** — every one of the 453 scored predictions. For each question: the
+gold SQL, what each measured configuration actually produced, and why the
+harness marked it right or wrong. Filter to the ones fine-tuning fixed, the
+ones it broke, or the ones that never executed. That is the part that carries
+the claim: not that a model emits SQL, but *whether the SQL is right*, and how
 that was established.
 
 ## Two results that did not go as expected

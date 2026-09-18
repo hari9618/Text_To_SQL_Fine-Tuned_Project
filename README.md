@@ -75,11 +75,11 @@ flowchart TD
 <tr>
 <td width="33%" align="center">
 
-### 🔍 Explore
+### 🔍 Try it
 **[Live demo →](https://huggingface.co/spaces/hari-krishna-ai/enterprise-text-to-sql)**
 
-All 453 predictions.
-Filter to the ones fine-tuning fixed — or broke.
+Ask the live pipeline anything, watch every step.
+Then explore all 453 scored predictions.
 
 </td>
 <td width="33%" align="center">

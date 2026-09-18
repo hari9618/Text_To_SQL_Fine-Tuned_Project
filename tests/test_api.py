@@ -302,3 +302,34 @@ def test_ui_is_self_contained(client):
     body = client.get("/").text
     for pattern in ("http://", "https://cdn", "<script src=", "<link rel=\"stylesheet\""):
         assert pattern not in body, f"UI reaches outside the container: {pattern}"
+
+
+# -------------------------------------------------------------------- CORS --
+
+def test_cors_grants_hugging_face_space_origins(client):
+    """The public demo is a static Space calling this API from the browser."""
+    origin = "https://hari-krishna-ai-enterprise-text-to-sql.static.hf.space"
+    r = client.options("/query", headers={
+        "Origin": origin,
+        "Access-Control-Request-Method": "POST",
+        "Access-Control-Request-Headers": "content-type",
+    })
+    assert r.status_code == 200
+    assert r.headers["access-control-allow-origin"] == origin
+    assert "POST" in r.headers["access-control-allow-methods"]
+
+
+def test_cors_does_not_grant_arbitrary_origins(client):
+    """Never '*': another site must not be able to spend this deployment's
+    inference quota from its visitors' browsers."""
+    r = client.options("/query", headers={
+        "Origin": "https://evil.example",
+        "Access-Control-Request-Method": "POST",
+    })
+    assert "access-control-allow-origin" not in r.headers
+    # A lookalike host must not match the pattern either.
+    r = client.options("/query", headers={
+        "Origin": "https://hf.space.evil.example",
+        "Access-Control-Request-Method": "POST",
+    })
+    assert "access-control-allow-origin" not in r.headers

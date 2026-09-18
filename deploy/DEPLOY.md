@@ -94,6 +94,12 @@ demonstrates the *pipeline*, the benchmark demonstrates the *fine-tuning*.
 To serve the fine-tuned model, run `MODEL_BACKEND=local` on a CUDA host, or
 put a vLLM server with the LoRA adapter behind the API.
 
+**The Hugging Face Space calls this API from the browser.** The API grants
+CORS to `*.hf.space` origins only (see `src/api/main.py`); add any other
+front-end origin as a comma-separated `CORS_ORIGINS` environment variable on
+Render. Never `*` — the API is unauthenticated, and an open grant would let any
+page spend this deployment's inference quota from its visitors' browsers.
+
 ---
 
 ## Costs
