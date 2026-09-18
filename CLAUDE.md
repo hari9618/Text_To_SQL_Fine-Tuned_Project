@@ -483,6 +483,23 @@ identical SQL rather than inventing something. That is the right failure.
 `max_repairs=1` is doing real work here: 4 of 19 returned the same SQL
 unchanged, so a second attempt would mostly have re-spent latency.
 
+### Failure analysis (2026-09-18)
+
+`scripts/failure_analysis.py` re-executes every remaining configuration-5
+failure next to its gold query and buckets it; report in
+`experiments/FAILURE_ANALYSIS.md`. Of 217 failures: **118 `projection_only`**
+(right rows, different column set — four easy templates fail 100 % because the
+templates disagree on which columns to return), 87 `wrong_rows`, 4
+`wrong_values`, 8 detectable. Row-level accuracy is 78.1 % (99.2 % on easy) —
+**a diagnostic, never the headline.** Real errors cluster by template into
+business definitions (~30, e.g. what "spending" means), month representation
+(`m09`, 24/24, `EXTRACT(MONTH)` vs `DATE_TRUNC`), a missing `DATA_AS_OF`
+reference date in the prompt (`x14`), and partitioned window functions
+(`v02`, 12/12 — **no training example contains `PARTITION BY`**).
+
+This was done on the test set. Any fix it motivates is decided on validation
+and re-measured as a new configuration; 52.10 % stays frozen.
+
 ### Hardware constraint (important)
 
 Local laptop: Intel Core i5-8365U, **8 GB RAM**, Intel UHD Graphics 620.

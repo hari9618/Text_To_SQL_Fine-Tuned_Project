@@ -187,8 +187,50 @@ would have claimed 57.9 % and hidden that. Repair works when the error **names t
 | enterprise | 84 | 13.1 % | 52.4 % | +39.3 |
 
 `easy` was 0 % at baseline entirely because of the projection problem — *"show orders in 2023"*
-never says which columns to return. `medium` did not move at all, and that is unexplained rather
-than glossed over.
+never says which columns to return. `medium` did not move at all; the failure analysis below
+traces 24 of its 25 remaining failures to a single template.
+
+</details>
+
+<details>
+<summary><b>Where the other 48 % went — every failure classified</b></summary>
+
+<br>
+
+The headline says *how many* were wrong. `scripts/failure_analysis.py` says *why*: every one of the
+217 remaining failures is re-executed next to its gold query and sorted into a bucket.
+Full report: [`experiments/FAILURE_ANALYSIS.md`](experiments/FAILURE_ANALYSIS.md).
+
+| bucket | n | of test set | what it means |
+|---|---:|---:|---|
+| `projection_only` | **118** | 26.0 % | right rows, different column set — the question never said which columns |
+| `wrong_rows` | 87 | 19.2 % | genuinely different rows — a real logic error |
+| `wrong_values` | 4 | 0.9 % | right rows, a computed value not returned |
+| detectable (hallucination / execution / syntax) | 8 | 1.8 % | the only failures self-correction can see |
+
+**More than half of all failures are benign.** In every `projection_only` case the model found
+exactly the right rows and returned, say, three of the gold query's four columns. Four easy
+templates account for 89 of them and each fails 100 % — *"Show payments larger than X"* fails 27/27
+because the gold picks `payment_method` and the model picks `amount`. The model cannot know which
+columns an unseen template's author chose; there is no rule to learn, because the templates
+themselves disagree (`e25` returns `payment_method`, `e27` returns `status`, same table).
+
+Counting those as correct gives a **row-level accuracy of 78.1 %** — 99.2 % on `easy`. That is a
+diagnostic, **not** the headline: the benchmark was frozen before any of this was looked at, and
+loosening a metric after seeing test results is exactly the move this project refuses to make.
+
+**The 91 real errors cluster into four root causes**, and a template fails wholesale or not at all,
+which points at rules the model does not know rather than at noise:
+
+| root cause | example | n | what fixes it |
+|---|---|---:|---|
+| **Business definitions** | *"highest spending customers"* — gold sums line items with discount, model sums `orders.total_amount`; *"net revenue"* — gold excludes cancelled *and* returned, model keeps only completed | ~30 | a metric glossary in the prompt (semantic layer), and training templates that encode the rules |
+| **Representation** | *"orders per month"* — gold `EXTRACT(MONTH)` → `1..12`, model `DATE_TRUNC('month')` → dates. Same 12 rows, same counts. 24/24 fail | 24 | consistent date conventions in the gold, or a representation-tolerant comparison chosen on validation |
+| **Missing context** | *"inactive for over 26 months"* — the gold anchors to a fixed `DATA_AS_OF` date the prompt never mentions; the model used `is_active` | 8 | put the reference date in the prompt |
+| **Real capability gaps** | top-N per group needs `ROW_NUMBER() OVER (PARTITION BY …)`; the model wrote a plain `GROUP BY`. 12/12 fail — and **no training example contains `PARTITION BY`** (90 window-function rows, all unpartitioned). Entity linking: *"handled by GlobalEx"* — it looked for a customer, not a carrier | ~25 | training templates that cover partitioned windows; value-aware schema context that says which column holds `'GlobalEx'` |
+
+The honest summary for an interviewer: **52 % strict, 78 % on rows; the gap is column conventions,
+and of the true errors most are business rules the model was never told, not SQL it cannot write.**
 
 </details>
 
@@ -304,6 +346,9 @@ python scripts/score_repair.py    --repairs repairs.jsonl
 # assemble the ablation and gate the release
 python scripts/ablation_report.py
 python scripts/release_gate.py
+
+# classify every remaining failure (re-executes gold and prediction side by side)
+python scripts/failure_analysis.py
 ```
 
 Generation needs a GPU; scoring needs PostgreSQL. They live on different machines, so the eval pack
@@ -325,7 +370,7 @@ src/
 database/         schema.sql, ERD.md
 dataset/          generation, validation, SFT formatting, splits
 training/         QLoRA training code + Kaggle notebooks
-experiments/      frozen results for all 5 configurations
+experiments/      frozen results for all 5 configurations + failure analysis
 scripts/          operational entry points
 deploy/ docker/   Space, Neon + Render, container images
 tests/            149 tests (93 database, 24 API, 32 adversarial)
@@ -339,7 +384,8 @@ Stated plainly, because they bound what the number means.
 
 - **Every test question came from the same generator as training.** Real users write
   abbreviations, typos and genuinely ambiguous requests. **This is the biggest caveat on 52.10 %.**
-- **Roughly half the answers are still wrong.**
+- **Roughly half the answers are still wrong** under strict scoring — 78 % return the right rows.
+  The remaining true errors are mostly business definitions the prompt never states.
 - **One epoch, one seed, one run.** No variance estimate.
 - **Schema-specific.** It learned *this* database's conventions — which is most of the gain.
 - **Silent wrong answers are the real risk**, and self-correction cannot help: a query that runs
