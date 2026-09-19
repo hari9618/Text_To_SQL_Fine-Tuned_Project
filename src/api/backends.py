@@ -215,8 +215,9 @@ def _build_hf() -> TextToSQLModel:
 
     return HFInferenceModel(
         model_id=os.getenv("MODEL_ID", DEFAULT_MODEL_ID),
-        # Measured in Phase 4: provider=auto routes to one that returns HTTP 402
-        # roughly half the time. Not a guess; see CLAUDE.md section 13.
-        provider=os.getenv("HF_PROVIDER", "featherless-ai"),
+        # A failover chain. Phase 4 found nscale throttling and featherless
+        # fine; 2026-09-19 found the reverse. Free providers flip, so the
+        # service tries each in turn rather than depending on one.
+        provider=os.getenv("HF_PROVIDER", "nscale,featherless-ai"),
         params=InferenceParams(temperature=0.0, max_tokens=512),
     )

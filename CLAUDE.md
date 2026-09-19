@@ -684,7 +684,12 @@ env\Scripts\python.exe scripts/run_baseline.py --sample 8 --provider featherless
 env\Scripts\python.exe scripts/run_baseline.py --provider featherless-ai --workers 6
 ```
 
-**Always pass `--provider featherless-ai --workers 6`.** Measured, not guessed:
+**Providers flip.** Phase 4 measured nscale throttling and featherless fine;
+on 2026-09-19 featherless returned "model is busy" / 402 while nscale
+answered. `HFInferenceModel` therefore takes a comma-separated **failover
+chain** (`--provider nscale,featherless-ai`; the API defaults to it via
+`HF_PROVIDER`) and moves to the next provider on each retry. The original
+Phase 4 measurement, still true on the day:
 
 | setting | result |
 | --- | --- |
@@ -704,6 +709,11 @@ not re-derive this.
 - It *recovers*: the throttle clears after ~33 s. Treated as retryable with
   long backoff (`THROTTLE_BACKOFF_S`), not fatal. Only 401/403 are fatal.
 - Buying pre-paid credits removes it. A full 453-example run costs ~$0.02–0.15.
+- **Both accounts (`Hari8909272928292`, `hari-krishna-ai`) depleted their
+  monthly included credits on 2026-09-18.** Tiny probes occasionally get
+  through; a full-size prompt does not. The live demo on Render uses the
+  first account's token and is down until credits are added or the month
+  rolls over. Do not burn what little gets through on verification loops.
 
 ### Checkpointing
 

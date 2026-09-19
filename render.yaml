@@ -34,10 +34,11 @@ services:
       # adapter needs a GPU, which the free tier does not have.
       - key: MODEL_BACKEND
         value: hf
-      # Measured in Phase 4: provider=auto routes to one that returns HTTP 402
-      # about half the time.
+      # Failover chain, tried in order on each retry. Free providers flip
+      # between fine, busy and out-of-credits; depending on one took the demo
+      # down twice.
       - key: HF_PROVIDER
-        value: featherless-ai
+        value: nscale,featherless-ai
 
       # Managed Postgres refuses plaintext connections.
       - key: PGSSLMODE

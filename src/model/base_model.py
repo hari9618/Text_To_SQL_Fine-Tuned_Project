@@ -199,13 +199,20 @@ class HFInferenceModel(TextToSQLModel):
             )
 
         self.model_id = model_id
-        self.provider = provider
+        # A comma-separated list is a failover chain: each retry moves to the
+        # next provider, so one provider being busy, throttled or out of
+        # credits does not take the service down. Measured on 2026-09-19:
+        # featherless-ai returned 'model is busy' and 402 while nscale answered
+        # in 7 s - the exact reverse of Phase 4. Neither is reliable alone.
+        self.providers = [p.strip() for p in provider.split(",") if p.strip()] or ["auto"]
+        self.provider = self.providers[0]
         self.prompt = prompt or prompt_v1
         self.params = params or InferenceParams()
         self.max_retries = max_retries
-        self._client = InferenceClient(
-            model=model_id, provider=provider, api_key=token, timeout=timeout_s
-        )
+        self._clients = {
+            p: InferenceClient(model=model_id, provider=p, api_key=token, timeout=timeout_s)
+            for p in self.providers
+        }
         self._revision: str | None = None
 
     def resolve_revision(self) -> str | None:
@@ -249,13 +256,16 @@ class HFInferenceModel(TextToSQLModel):
         last_error = ""
         started = time.perf_counter()
 
+        n_prov = len(self.providers)
         for attempt in range(1, self.max_retries + 1):
+            provider = self.providers[(attempt - 1) % n_prov]
+            client = self._clients[provider]
             # Restart the clock each attempt. Retry backoff can be minutes on a
             # throttled free tier, and folding that into "generation latency"
             # would report the provider's rate limit as model speed.
             attempt_started = time.perf_counter()
             try:
-                response = self._client.chat_completion(**kwargs)
+                response = client.chat_completion(**kwargs)
                 elapsed = (time.perf_counter() - attempt_started) * 1000
 
                 choice = response.choices[0]
@@ -270,12 +280,12 @@ class HFInferenceModel(TextToSQLModel):
                     finish_reason=getattr(choice, "finish_reason", None),
                     prompt_tokens=getattr(usage, "prompt_tokens", None),
                     completion_tokens=getattr(usage, "completion_tokens", None),
-                    provider=getattr(response, "provider", None) or self.provider,
+                    provider=provider,
                     attempts=attempt,
                 )
 
             except Exception as exc:  # network, rate limit, provider error
-                last_error = f"{type(exc).__name__}: {exc}"[:300]
+                last_error = f"[{provider}] {type(exc).__name__}: {exc}"[:300]
 
                 status = getattr(getattr(exc, "response", None), "status_code", None)
 
@@ -293,7 +303,12 @@ class HFInferenceModel(TextToSQLModel):
                         ok=False, error=last_error, attempts=attempt, fatal=True,
                     )
 
+                # With a failover chain, a throttled provider is simply skipped:
+                # the next attempt goes elsewhere. The long backoff applies only
+                # once every provider in the chain has been tried and throttled.
                 if _saw(THROTTLE_HTTP_STATUSES):
+                    if n_prov > 1 and attempt % n_prov != 0:
+                        continue
                     if attempt < self.max_retries:
                         time.sleep(THROTTLE_BACKOFF_S[
                             min(attempt - 1, len(THROTTLE_BACKOFF_S) - 1)])
@@ -304,7 +319,10 @@ class HFInferenceModel(TextToSQLModel):
                     kwargs.pop("seed")
                     continue
                 if attempt < self.max_retries:
-                    time.sleep(min(2 ** attempt, 20))
+                    # Other failures ('model is busy', truncated body, timeout):
+                    # switch provider at once, back off only after a full cycle.
+                    time.sleep(1 if (n_prov > 1 and attempt % n_prov != 0)
+                               else min(2 ** attempt, 20))
 
         return GenerationResult(
             sql="",
@@ -321,6 +339,7 @@ class HFInferenceModel(TextToSQLModel):
             "model_id": self.model_id,
             "model_revision": self.resolve_revision(),
             "provider": self.provider,
+            "provider_chain": self.providers,
             "fine_tuned": False,
             "adapters": [],
             "inference_params": self.params.as_dict(),
