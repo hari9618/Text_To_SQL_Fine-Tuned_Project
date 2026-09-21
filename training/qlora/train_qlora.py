@@ -46,6 +46,14 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
+# One GPU, deliberately. On a 2xT4 Kaggle session the Trainer would wrap the
+# model in nn.DataParallel, which scatters every tensor argument along dim 0 -
+# including the 1-D position index the label-only loss passes as
+# `logits_to_keep`. The v1 run measured no real speed-up from the second card
+# either (134 steps at ~131 s vs. 266 at ~75 s). Set before torch is imported;
+# an explicit value in the environment wins.
+os.environ.setdefault("CUDA_VISIBLE_DEVICES", "0")
+
 # --------------------------------------------------------------------------
 # 1. GPU gate — before importing anything heavy
 # --------------------------------------------------------------------------
@@ -347,6 +355,68 @@ def _adapt_kwargs(callable_obj, desired: dict, renames: dict[str, list[str]] | N
     return kwargs, dropped
 
 
+def make_label_only_trainer(base_trainer_cls):
+    """A Trainer that only ever computes logits at supervised positions.
+
+    With completion-only loss, ~97 % of every sequence is prompt whose labels
+    are -100. The stock forward still projects *every* position through the
+    151,936-way lm_head and cross-entropy - for a 1,944-token v2 example that
+    is ~590 MB of fp16 logits, ~1.2 GB once upcast to fp32, and as much again
+    in temporaries. That was the allocation that ran the v2 run out of memory
+    at step 34/136 (13.4 GB in use on a 14.6 GB T4).
+
+    Transformers' ``logits_to_keep`` accepts a tensor of positions, so the
+    lm_head is applied to just the ~45 positions that predict SQL tokens. The
+    loss is mathematically identical to the full computation over the same
+    label mask; only the wasted work is gone. Falls back to full logits, then
+    slicing, if a model does not accept the argument.
+    """
+
+    class LabelOnlyLogitsTrainer(base_trainer_cls):
+        _supports_keep = True
+
+        def compute_loss(self, model, inputs, return_outputs=False,
+                         num_items_in_batch=None):
+            import torch
+            import torch.nn.functional as F
+
+            labels = inputs.pop("labels")
+            # Position t predicts token t+1, so keep t where labels[:, t+1]
+            # is supervised for any sample in the (padded) batch.
+            shifted = labels[:, 1:]
+            keep = (shifted != -100).any(dim=0).nonzero(as_tuple=True)[0]
+            if keep.numel() == 0:              # defensive: nothing to learn
+                keep = torch.tensor([shifted.shape[1] - 1], device=labels.device)
+
+            outputs = None
+            if self._supports_keep:
+                try:
+                    outputs = model(**inputs, logits_to_keep=keep)
+                except TypeError:
+                    self._supports_keep = False
+                    print("  [note] model rejects logits_to_keep; using full logits")
+            if outputs is None:
+                outputs = model(**inputs)
+                outputs.logits = outputs.logits[:, keep, :]
+
+            logits = outputs.logits.float()
+            targets = shifted[:, keep]
+            flat_logits = logits.reshape(-1, logits.size(-1))
+            flat_targets = targets.reshape(-1)
+            if num_items_in_batch is not None:
+                # Recent Trainers pass the supervised-token count for the
+                # whole accumulation window and skip their own division by
+                # the accumulation steps; the loss must be token-averaged
+                # over that window here, or gradients come out 16x too large.
+                loss = F.cross_entropy(flat_logits, flat_targets, ignore_index=-100,
+                                       reduction="sum") / num_items_in_batch
+            else:
+                loss = F.cross_entropy(flat_logits, flat_targets, ignore_index=-100)
+            return (loss, outputs) if return_outputs else loss
+
+    return LabelOnlyLogitsTrainer
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="QLoRA fine-tune Qwen3-8B for Text-to-SQL")
     parser.add_argument("--train-file", default=None)
@@ -367,6 +437,9 @@ def main() -> int:
                         help="adapt attention projections only (drop MLP)")
     parser.add_argument("--max-train-examples", type=int, default=None,
                         help="train on the first N examples only")
+    parser.add_argument("--full-logits", action="store_true",
+                        help="compute logits at every position (the v1 behaviour); "
+                             "needs ~3 GB more VRAM at 1,900 tokens")
     parser.add_argument("--smoke", action="store_true",
                         help="8 optimiser steps on a tiny slice, to prove the "
                              "pipeline works before committing hours to it")
@@ -566,7 +639,9 @@ def main() -> int:
         print(f"  [note] settings unsupported by this transformers version "
               f"and dropped: {dropped}")
 
-    trainer = Trainer(
+    trainer_cls = Trainer if args.full_logits else make_label_only_trainer(Trainer)
+    print(f"  loss impl        {'full logits' if args.full_logits else 'label-only logits (lm_head on supervised positions)'}")
+    trainer = trainer_cls(
         model=peft_model,
         args=TrainingArguments(**ta_kwargs),
         train_dataset=Dataset.from_list(train_ex),
@@ -603,6 +678,7 @@ def main() -> int:
             "gpu": gpu,
             "compute_dtype": str(compute_dtype),
             "attn_implementation": attn_impl,
+            "loss_impl": "full_logits" if args.full_logits else "label_only_logits",
             "dataset_stats": {"train": train_stats, "validation": val_stats},
             "trainable_params": trainable,
             "total_params": total,

@@ -109,3 +109,22 @@ env\Scripts\python.exe scripts/score_finetuned.py --version v2 --predictions "C:
 
 Unzip run 1's `adapter.zip` into `models/finetuned_v2/` first so the scorer
 can record the training config beside the result.
+
+### v2, attempt 1: out of memory at step 34 — fixed
+
+The first v2 commit died with `CUDA out of memory` (13.4 GB of 14.6 GB in
+use) at step 34/136, training otherwise healthy. v2 prompts are ~330 tokens
+longer than v1 and the T4 had no headroom left.
+
+Fix, in `train_qlora.py`: the lm_head and cross-entropy now run only on the
+~45 supervised SQL positions per sequence (`logits_to_keep`), not on all
+~1,900 — the prompt positions are masked out of the loss anyway, and their
+151k-vocabulary logits plus fp32 copies were ~3 GB per step. The loss is
+identical. The script also pins one GPU (Kaggle's 2-GPU `DataParallel`
+would scatter the position index) and the notebook accumulates 16
+micro-batches, so effective batch stays 16 as in v1.
+
+**Re-uploading is required**: the notebook reads `train_qlora.py` from the
+`text2sql-sft-v2` dataset, so upload a **new version** of that dataset with
+the updated script (Dataset page -> New Version -> replace `train_qlora.py`),
+then re-import `kaggle_qlora_qwen3_8b_v2.ipynb` and commit.
