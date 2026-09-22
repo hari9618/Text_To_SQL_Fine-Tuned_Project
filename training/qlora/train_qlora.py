@@ -381,6 +381,13 @@ def make_label_only_trainer(base_trainer_cls):
             import torch.nn.functional as F
 
             labels = inputs.pop("labels")
+            # transformers >= 5 injects skip_logits=True into the *eval* inputs
+            # when use_liger_kernel is on and no metrics are computed
+            # (Trainer.prediction_step). Liger would then refuse to run
+            # without labels - the exact failure of v2 attempt 2. This loss
+            # always wants the (sliced) logits, so the flag is dropped here
+            # and re-sent as False below.
+            inputs.pop("skip_logits", None)
             # Position t predicts token t+1, so keep t where labels[:, t+1]
             # is supervised for any sample in the (padded) batch.
             shifted = labels[:, 1:]
