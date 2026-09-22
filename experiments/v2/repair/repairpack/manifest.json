@@ -1,0 +1,27 @@
+{
+  "phase": 11,
+  "benchmark_version": "v2",
+  "purpose": "failing queries for remote repair; scoring happens locally",
+  "repair_prompt": {
+    "version": "v1",
+    "fingerprint": "b66ccdd66e919abd"
+  },
+  "schema": {
+    "fingerprint": "d03619e711661bc5"
+  },
+  "failures": {
+    "count": 25,
+    "fingerprint": "b3562f3608e128f2",
+    "by_stage": {
+      "static": 2,
+      "execution": 23
+    },
+    "source": "experiments/v2/finetuned/results.jsonl",
+    "gold_sql_included": false
+  },
+  "to_beat": {
+    "executable_sql_pct": 94.48,
+    "strict_execution_accuracy_pct": 68.43,
+    "schema_hallucination_pct": 3.75
+  }
+}
