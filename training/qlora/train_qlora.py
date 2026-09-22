@@ -390,11 +390,22 @@ def make_label_only_trainer(base_trainer_cls):
 
             outputs = None
             if self._supports_keep:
-                try:
-                    outputs = model(**inputs, logits_to_keep=keep)
-                except TypeError:
-                    self._supports_keep = False
-                    print("  [note] model rejects logits_to_keep; using full logits")
+                # Liger's patched forward decides on its own whether to skip
+                # the logits (it expects to fuse the loss itself), and in eval
+                # mode with no labels it skips them and raises. The v2 run
+                # died exactly there, at the first evaluation, step 50. Say
+                # explicitly that the logits are wanted; a model whose forward
+                # has no such argument gets the call without it.
+                for extra in ({"skip_logits": False}, {}):
+                    try:
+                        outputs = model(**inputs, logits_to_keep=keep, **extra)
+                        break
+                    except TypeError as exc:
+                        if "skip_logits" in str(exc) and extra:
+                            continue
+                        self._supports_keep = False
+                        print("  [note] model rejects logits_to_keep; using full logits")
+                        break
             if outputs is None:
                 outputs = model(**inputs)
                 outputs.logits = outputs.logits[:, keep, :]

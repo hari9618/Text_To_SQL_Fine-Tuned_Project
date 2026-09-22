@@ -128,3 +128,17 @@ micro-batches, so effective batch stays 16 as in v1.
 `text2sql-sft-v2` dataset, so upload a **new version** of that dataset with
 the updated script (Dataset page -> New Version -> replace `train_qlora.py`),
 then re-import `kaggle_qlora_qwen3_8b_v2.ipynb` and commit.
+
+### v2, attempt 2: failed at the first evaluation — fixed
+
+Attempt 2 cleared the memory limit (step 50 with ~5 GB free, loss 1.75 ->
+0.005) and died at the first evaluation: Liger's patched forward skips the
+logits in eval mode when no labels are passed, and the label-only loss passes
+none. `compute_loss` now calls the model with `skip_logits=False`.
+
+Kaggle discards `/kaggle/working` on a failed commit, which is how two
+attempts each lost their step-50 checkpoint. The notebook no longer raises on
+a training failure: it writes `TRAINING_FAILED.txt`, prints a banner, keeps
+the checkpoints, and packages `checkpoints.zip`-style output instead of
+`adapter.zip`. Attach that failed version as an Input of the next run and it
+resumes from the latest checkpoint.
