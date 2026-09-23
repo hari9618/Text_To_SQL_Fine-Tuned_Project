@@ -43,6 +43,7 @@ from sqlglot import exp
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from src.benchmark_versions import add_version_argument, get as get_version
 from src.sql.config import PROJECT_ROOT, ConfigError, app_config  # noqa: E402
 from src.sql.executor import (  # noqa: E402
     MAX_ROWS,
@@ -51,9 +52,7 @@ from src.sql.executor import (  # noqa: E402
     result_fingerprint,
 )
 
-DEFAULT_RESULTS = PROJECT_ROOT / "experiments" / "repair" / "results.jsonl"
-OUT_DIR = PROJECT_ROOT / "experiments" / "failure_analysis"
-REPORT = PROJECT_ROOT / "experiments" / "FAILURE_ANALYSIS.md"
+
 
 BUCKET_ORDER = [
     "projection_only",
@@ -423,11 +422,23 @@ def write_report(results_path: Path, all_rows: list[dict], failures: list[dict],
 
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    p.add_argument("--results", type=Path, default=DEFAULT_RESULTS)
+    add_version_argument(p)
+    p.add_argument("--results", type=Path, default=None)
     p.add_argument("--label", default="fine-tuned + repair (configuration 5)")
     args = p.parse_args()
 
-    results_path = args.results.resolve()
+    version = get_version(args.version)
+    global OUT_DIR, REPORT
+    OUT_DIR = version.experiments_root / "failure_analysis"
+    REPORT = version.experiments_root / "FAILURE_ANALYSIS.md"
+
+    default_results = version.experiments_root / "repair" / "results.jsonl"
+    results_path = (args.results or default_results).resolve()
+    if results_path != default_results.resolve():
+        # A one-off comparison must not overwrite the configuration-5 report.
+        stem = results_path.parent.name
+        OUT_DIR = version.experiments_root / f"failure_analysis_{stem}"
+        REPORT = version.experiments_root / f"FAILURE_ANALYSIS_{stem}.md"
     all_rows = [json.loads(l) for l in results_path.read_text(encoding="utf-8").splitlines()
                 if l.strip()]
     failures_in = [r for r in all_rows if not r.get("correct")]

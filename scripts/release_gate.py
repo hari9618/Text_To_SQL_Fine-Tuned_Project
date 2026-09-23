@@ -39,6 +39,7 @@ from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from src.benchmark_versions import add_version_argument, get as get_version
 from src.sql.config import PROJECT_ROOT  # noqa: E402
 
 BASELINE = PROJECT_ROOT / "experiments" / "baseline" / "summary.json"
@@ -50,7 +51,7 @@ MIN_ACCURACY_GAIN_PP = 5.0       # below this the fine-tune is not worth shippin
 MAX_EXECUTABLE_DROP_PP = 4.0     # more broken queries than this blocks release
 MAX_HALLUCINATION_RISE_PP = 2.0  # inventing tables/columns is the worst failure
 MAX_SYNTAX_ERROR_PCT = 1.0
-EXPECTED_PROMPT_FP = "8288e41a496531a9"
+
 EXPECTED_SCHEMA_FP = "d03619e711661bc5"
 
 
@@ -102,7 +103,8 @@ def accuracy_by_tier(results_path: Path, gold: dict[str, dict]) -> dict[str, flo
 
 def run_gate(base: dict, cand: dict, tests_passed: bool | None,
              tier_base: dict[str, float] | None = None,
-             tier_cand: dict[str, float] | None = None) -> list[Check]:
+             tier_cand: dict[str, float] | None = None,
+             expected_prompt_fp: str | None = None) -> list[Check]:
     checks: list[Check] = []
 
     # ---- the comparison must be legitimate before the numbers mean anything
@@ -114,10 +116,19 @@ def run_gate(base: dict, cand: dict, tests_passed: bool | None,
 
     meta = cand.get("run_metadata", {})
     prompt_fp = meta.get("prompt", {}).get("fingerprint")
+    base_prompt_fp = base.get("run_metadata", {}).get("prompt", {}).get("fingerprint")
+    # Both halves of the comparison must have rendered the same prompt, and it
+    # must be the prompt this benchmark version froze - otherwise the delta is
+    # partly prompt engineering.
     checks.append(Check(
-        "prompt matches the frozen baseline",
-        prompt_fp == EXPECTED_PROMPT_FP,
-        f"{prompt_fp} (need {EXPECTED_PROMPT_FP})"))
+        "candidate and baseline rendered the same prompt",
+        prompt_fp == base_prompt_fp,
+        f"candidate {prompt_fp} vs baseline {base_prompt_fp}"))
+    if expected_prompt_fp:
+        checks.append(Check(
+            "prompt matches this version's frozen prompt",
+            prompt_fp == expected_prompt_fp,
+            f"{prompt_fp} (need {expected_prompt_fp})"))
 
     db_cand = meta.get("database", {}).get("data_fingerprint")
     db_base = base.get("run_metadata", {}).get("database", {}).get("data_fingerprint")
@@ -183,9 +194,10 @@ def run_gate(base: dict, cand: dict, tests_passed: bool | None,
 
 def main() -> int:
     p = argparse.ArgumentParser(description="Release gate for a fine-tuned model")
-    p.add_argument("--candidate", default=str(DEFAULT_CANDIDATE),
+    add_version_argument(p)
+    p.add_argument("--candidate", default=None,
                    help="experiment directory holding summary.json")
-    p.add_argument("--baseline", default=str(BASELINE))
+    p.add_argument("--baseline", default=None)
     p.add_argument("--skip-tests", action="store_true",
                    help="do not run pytest as part of the gate")
     args = p.parse_args()
@@ -199,8 +211,12 @@ def main() -> int:
             path = path / "summary.json"
         return path
 
-    cand_path = resolve(args.candidate)
-    base_path = resolve(args.baseline)
+    version = get_version(args.version)
+    cand_path = resolve(args.candidate or
+                        str(version.experiments_root / "finetuned"))
+    base_path = resolve(args.baseline or
+                        str(version.experiments_root / "baseline" / "summary.json"))
+    expected_prompt_fp = version.prompt().prompt_fingerprint()
 
     def show(path: Path) -> str:
         try:
@@ -209,7 +225,7 @@ def main() -> int:
             return str(path)
 
     print("=" * 74)
-    print("RELEASE GATE")
+    print(f"RELEASE GATE  (benchmark {version.name})")
     print("=" * 74)
 
     for path, label in ((base_path, "baseline"), (cand_path, "candidate")):
@@ -238,7 +254,7 @@ def main() -> int:
         print()
 
     gold: dict[str, dict] = {}
-    test_set = PROJECT_ROOT / "dataset" / "test" / "test.jsonl"
+    test_set = version.split("test")
     if test_set.exists():
         gold = {json.loads(l)["id"]: json.loads(l)
                 for l in test_set.read_text(encoding="utf-8").splitlines()
@@ -246,7 +262,8 @@ def main() -> int:
     tier_base = accuracy_by_tier(base_path.parent / "results.jsonl", gold)
     tier_cand = accuracy_by_tier(cand_path.parent / "results.jsonl", gold)
 
-    checks = run_gate(base, cand, tests_passed, tier_base, tier_cand)
+    checks = run_gate(base, cand, tests_passed, tier_base, tier_cand,
+                      expected_prompt_fp)
 
     width = max(len(c.name) for c in checks)
     for c in checks:
