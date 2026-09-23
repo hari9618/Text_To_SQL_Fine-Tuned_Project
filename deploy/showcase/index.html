@@ -454,13 +454,33 @@ function step(state, title, sub) {
   return `<li><span class="ic ${state}">${ic}</span><div><div class="t">${title}</div>${sub ? `<div class="s">${sub}</div>` : ""}</div></li>`;
 }
 
+// The demo runs on a free inference allowance. When it is exhausted the
+// provider returns a 402 whose body is a stack of URLs and request ids -
+// useless to a visitor, and it looks like the project is broken rather than
+// out of quota. Translate the failures a visitor can actually hit.
+function friendlyError(raw) {
+  const e = String(raw || "");
+  if (/402|depleted|Payment Required/i.test(e))
+    return "The free Hugging Face inference allowance for this demo is used up. "
+         + "The benchmark numbers on the other tabs are unaffected — they were "
+         + "generated on a GPU and scored against PostgreSQL, not through this API. "
+         + "Try the <b>Explorer</b> tab to see all 453 scored predictions.";
+  if (/50[234]|timed? ?out|Gateway/i.test(e))
+    return "The inference provider is not responding right now. This is a free "
+         + "third-party endpoint; try again in a moment.";
+  if (/Failed to fetch|NetworkError/i.test(e))
+    return "Could not reach the API. It sleeps on the free tier and can take "
+         + "~50 s to wake — try once more.";
+  return esc(e) || "no SQL produced";
+}
+
 function renderTrace(res) {
   const a = res.attempts || [];
   const first = a[0], second = a[1];
   const items = [];
   const gen = res.timings?.generation_ms;
   items.push(step(first ? "ok" : "no", "1 · Generate SQL",
-    first ? `Qwen3-8B via Hugging Face inference · ${gen != null ? gen.toFixed(0) + " ms" : ""}` : esc(res.error||"no SQL produced")));
+    first ? `Qwen3-8B via Hugging Face inference · ${gen != null ? gen.toFixed(0) + " ms" : ""}` : friendlyError(res.error)));
   if (first) items.push(`<li><span class="ic none"></span><pre class="sql" style="margin:0">${hl(first.sql)}</pre></li>`);
   const staticFail = first && !first.ok && first.stage === "static";
   items.push(step(!first ? "skip" : staticFail ? "no" : "ok", "2 · Static validation",
