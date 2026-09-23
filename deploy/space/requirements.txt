@@ -6,3 +6,6 @@ accelerate>=1.0
 bitsandbytes>=0.45
 sentencepiece
 sqlglot==25.34.1
+# Execution against the read-only Neon role. Optional at runtime: the Space
+# works without database secrets and says the pipeline stopped at validation.
+psycopg[binary]>=3.2

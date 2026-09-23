@@ -1,16 +1,27 @@
-"""Enterprise Text-to-SQL — ZeroGPU demo Space.
+"""Enterprise Text-to-SQL — ZeroGPU demo Space (iteration 2).
 
-Serves the fine-tuned QLoRA adapter (hari-krishna-ai/qwen3-8b-text2sql-qlora)
-on ZeroGPU, and shows the pipeline the benchmark actually measured:
+Serves the **fine-tuned** QLoRA adapter on a ZeroGPU slice and runs the whole
+pipeline the benchmark measured:
 
-    question -> prompt (frozen template) -> Qwen3-8B + adapter
+    question -> prompt v2 -> Qwen3-8B + adapter (4-bit)
              -> static validation (sqlglot)
-             -> the SQL, with the trace
+             -> execution against read-only PostgreSQL
+             -> rows, with the trace
 
-Execution against PostgreSQL is deliberately *not* in this Space. The benchmark
-executes every prediction against a real database; a public Space has no
-database attached, so it stops at static validation and says so rather than
-implying a result it cannot produce.
+This is the 70.86 % configuration, not the base model the static showcase page
+calls through a CPU API.
+
+Two things are shipped rather than retyped, because a copy that drifts would
+silently invalidate every number on the Benchmark tab:
+
+* ``prompt_module.py`` is ``src/model/prompt_v2.py`` verbatim. Its fingerprint
+  is asserted at startup against the one the adapter was trained with.
+* ``schema_context.txt`` is the rendered schema from the eval pack.
+
+Execution is **optional**: with no database credentials in the Space secrets
+the pipeline stops at static validation and says so, rather than implying a
+result it cannot produce. With them, it runs the query in a read-only session
+with a statement timeout, exactly as the API does.
 """
 
 from __future__ import annotations
@@ -26,13 +37,15 @@ import sqlglot
 import torch
 from peft import PeftModel
 from sqlglot import exp
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
-ADAPTER = os.getenv("ADAPTER_REPO", "hari-krishna-ai/qwen3-8b-text2sql-qlora")
+import prompt_module            # src/model/prompt_v2.py, shipped verbatim
+
+ADAPTER = os.getenv("ADAPTER_REPO", "hari-krishna-ai/qwen3-8b-text2sql-qlora-v2")
 BASE = "Qwen/Qwen3-8B"
 REVISION = "b968826d9c46"      # the exact weights the adapter was trained on
 
-EXPECTED_PROMPT_FP = "8288e41a496531a9"
+EXPECTED_PROMPT_FP = "4e72cc5f722ce436"
 EXPECTED_SCHEMA_FP = "d03619e711661bc5"
 
 with open("schema_context.txt", encoding="utf-8") as fh:
@@ -41,38 +54,37 @@ with open("schema_context.txt", encoding="utf-8") as fh:
 SCHEMA_FP = hashlib.sha256(SCHEMA.encode("utf-8")).hexdigest()[:16]
 
 # --------------------------------------------------------------------------
-# The frozen prompt. Byte-identical to the one used for training and for every
-# number in the ablation below -- a reworded prompt would change the results.
+# The prompt. Imported from the shipped module rather than retyped: this is
+# the exact text the adapter was trained against, and the fingerprint below
+# fails the Space at startup if it ever stops matching.
 # --------------------------------------------------------------------------
-SYSTEM_PROMPT = """You are an expert PostgreSQL analyst. You convert business \
-questions into correct, executable PostgreSQL queries.
+SYSTEM_PROMPT = prompt_module.SYSTEM_PROMPT
+USER_TEMPLATE = prompt_module.USER_TEMPLATE
+PROMPT_FP = prompt_module.prompt_fingerprint()
 
-Rules:
-- Output ONLY the SQL query. No explanation, no commentary.
-- Use only the tables and columns given in the schema.
-- Write a single SELECT statement. Never modify data.
-- Use PostgreSQL syntax.
-- When a foreign key is nullable, consider whether LEFT JOIN is needed to \
-avoid silently dropping rows."""
-
-USER_TEMPLATE = """Database schema:
-
-{schema}
-
-Question: {question}
-
-PostgreSQL query:"""
-
-PROMPT_FP = hashlib.sha256(
-    (SYSTEM_PROMPT + "\x00" + USER_TEMPLATE + "\x00" + "v1").encode("utf-8")
-).hexdigest()[:16]
+assert PROMPT_FP == EXPECTED_PROMPT_FP, (
+    f"prompt drifted: {PROMPT_FP} != {EXPECTED_PROMPT_FP}. The adapter was "
+    f"trained against prompt v2; rendering anything else measures something "
+    f"other than what the Benchmark tab claims.")
+assert SCHEMA_FP == EXPECTED_SCHEMA_FP, (
+    f"schema drifted: {SCHEMA_FP} != {EXPECTED_SCHEMA_FP}")
 
 TABLES = set(re.findall(r"CREATE TABLE (\w+)", SCHEMA))
 
 # --------------------------------------------------------------------------
 # Model. ZeroGPU requires placement on cuda at module level; a PyTorch CUDA
 # emulation mode makes that work outside @spaces.GPU functions.
-# 4-bit NF4 matches the configuration every benchmark number was measured with.
+#
+# **bf16, not the 4-bit the benchmark used.** bitsandbytes needs real CUDA
+# kernels to quantize, and at module level ZeroGPU only emulates CUDA - the
+# first deploy was killed part-way through loading weights. A ZeroGPU slice has
+# 48 GB of VRAM, so the 16 GB bf16 model fits with room to spare and needs no
+# quantization at all.
+#
+# This is the same adapter and the same prompt as the 70.86 % run, at higher
+# numerical precision. Quantization usually costs a little quality rather than
+# adding it, so this is not a configuration that could flatter the model - but
+# it is not byte-identical to the measured one either, and the UI says so.
 # --------------------------------------------------------------------------
 tokenizer = AutoTokenizer.from_pretrained(ADAPTER)
 if not getattr(tokenizer, "chat_template", None):
@@ -86,17 +98,42 @@ if not getattr(tokenizer, "chat_template", None):
 if tokenizer.pad_token is None:
     tokenizer.pad_token = tokenizer.eos_token
 
-_base = AutoModelForCausalLM.from_pretrained(
-    BASE, revision=REVISION,
-    quantization_config=BitsAndBytesConfig(
-        load_in_4bit=True,
-        bnb_4bit_quant_type="nf4",
-        bnb_4bit_use_double_quant=True,
-        bnb_4bit_compute_dtype=torch.float16),
-    device_map={"": 0},
-    torch_dtype=torch.float16,
-)
-model = PeftModel.from_pretrained(_base, ADAPTER).eval()
+_MODEL = None
+
+
+def get_model():
+    """Load once, inside the GPU worker, and keep it for later calls.
+
+    ZeroGPU's docs prefer module-level placement, but that path only has an
+    emulated CUDA device: two deploys were killed part-way through loading
+    weights, silently and with no traceback, because a 16 GB model was being
+    materialised in container RAM. Inside ``@spaces.GPU`` the CUDA device is
+    real, so accelerate streams the shards straight onto the card and
+    bitsandbytes can quantize - which also restores the exact 4-bit NF4
+    configuration every benchmark number was measured with.
+
+    The cost is that the load has to fit inside one GPU task. A free ZeroGPU
+    account caps a single task well below the 40 min a PRO account gets, so
+    the decorator asks for a little under two minutes and the model is cached
+    in the worker for every later call.
+    """
+    global _MODEL
+    if _MODEL is None:
+        from transformers import BitsAndBytesConfig
+
+        base = AutoModelForCausalLM.from_pretrained(
+            BASE, revision=REVISION,
+            quantization_config=BitsAndBytesConfig(
+                load_in_4bit=True,
+                bnb_4bit_quant_type="nf4",
+                bnb_4bit_use_double_quant=True,
+                bnb_4bit_compute_dtype=torch.float16),
+            device_map={"": 0},
+            dtype=torch.float16,
+            low_cpu_mem_usage=True,
+        )
+        _MODEL = PeftModel.from_pretrained(base, ADAPTER).eval()
+    return _MODEL
 
 
 def extract_sql(raw: str) -> str:
@@ -138,8 +175,48 @@ def validate(sql: str) -> tuple[bool, str]:
     return True, f"single read-only statement over {len(referenced)} real table(s)"
 
 
-@spaces.GPU(duration=60)
+
+# --------------------------------------------------------------------------
+# Execution. Optional: present only if the Space has database credentials in
+# its secrets. The role is the same non-superuser the API uses, the session is
+# read-only and carries a statement timeout, so a query this Space runs cannot
+# write and cannot hang. Without credentials the pipeline stops at validation
+# and says so rather than implying a result.
+# --------------------------------------------------------------------------
+DB_READY = all(os.getenv(k) for k in ("PGHOST", "PGDATABASE", "APP_DB_USER",
+                                      "APP_DB_PASSWORD"))
+STATEMENT_TIMEOUT_MS = int(os.getenv("SQL_STATEMENT_TIMEOUT_MS", "15000"))
+MAX_ROWS = 50
+
+
+def run_sql(sql: str):
+    """Execute in a read-only session. Returns (columns, rows, error, ms)."""
+    import psycopg
+
+    started = time.perf_counter()
+    conn = psycopg.connect(
+        host=os.environ["PGHOST"], dbname=os.environ["PGDATABASE"],
+        user=os.environ["APP_DB_USER"], password=os.environ["APP_DB_PASSWORD"],
+        port=int(os.getenv("PGPORT", "5432")),
+        sslmode=os.getenv("PGSSLMODE", "require"), connect_timeout=10,
+    )
+    try:
+        conn.read_only = True
+        with conn.cursor() as cur:
+            cur.execute(f"SET statement_timeout = {STATEMENT_TIMEOUT_MS}")
+            cur.execute(sql)
+            cols = [d.name for d in (cur.description or [])]
+            rows = cur.fetchmany(MAX_ROWS)
+        return cols, rows, None, (time.perf_counter() - started) * 1000
+    except Exception as exc:  # noqa: BLE001 - shown to the user
+        return [], [], f"{type(exc).__name__}: {str(exc).splitlines()[0][:200]}",                (time.perf_counter() - started) * 1000
+    finally:
+        conn.close()
+
+
+@spaces.GPU(duration=110)
 def generate(question: str) -> str:
+    model = get_model()
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user",
@@ -165,15 +242,15 @@ def generate(question: str) -> str:
 def ask(question: str):
     question = (question or "").strip()
     if not question:
-        return "", "Type a question, or pick an example below.", ""
+        return "", "Type a question, or pick an example below.", "", None
     if len(question) > 2000:
-        return "", "That question is too long (2000 character limit).", ""
+        return "", "That question is too long (2000 character limit).", "", None
 
     started = time.perf_counter()
     try:
         raw = generate(question)
     except Exception as exc:  # noqa: BLE001 - surfaced to the user, not swallowed
-        return "", f"### Generation failed\n\n`{type(exc).__name__}: {exc}`", ""
+        return "", f"### Generation failed" + chr(10)*2 + f"`{type(exc).__name__}: {exc}`", "", None
     elapsed = (time.perf_counter() - started) * 1000
 
     sql = extract_sql(raw)
@@ -182,31 +259,55 @@ def ask(question: str):
     trace = [
         "**Pipeline**",
         "",
-        f"- ✅ **Prompt built** — frozen template `{PROMPT_FP}`, "
+        f"- OK **Prompt built** - prompt v2 `{PROMPT_FP}`, "
         f"schema `{SCHEMA_FP}` (12 tables, {len(SCHEMA):,} chars)",
-        f"- ✅ **SQL generated** — fine-tuned adapter, greedy decoding, "
+        f"- OK **SQL generated** - **fine-tuned adapter**, 4-bit NF4, greedy, "
         f"{elapsed:,.0f} ms on ZeroGPU",
-        (f"- ✅ **Static validation passed** — {detail}" if ok
-         else f"- ❌ **Static validation rejected it** — {detail}"),
-        "- ⏸️ **Execution** — not available in this Space (no database "
-        "attached). The benchmark executes every query against real "
-        "PostgreSQL; here the pipeline stops at validation.",
+        (f"- OK **Static validation passed** - {detail}" if ok
+         else f"- FAIL **Static validation rejected it** - {detail}"),
+    ]
+
+    table = None
+    if not ok:
+        trace.append("- SKIP **Execution** - refused before touching the "
+                     "database, which is the point of the check.")
+    elif not DB_READY:
+        trace.append("- PAUSED **Execution** - no database attached to this "
+                     "Space. The benchmark executes every query against real "
+                     "PostgreSQL; here the pipeline stops at validation.")
+    else:
+        cols, rows, err, ms = run_sql(sql)
+        if err:
+            trace.append(f"- FAIL **Execution failed** - `{err}`")
+        else:
+            trace.append(
+                f"- OK **Executed** - {len(rows)} row(s)"
+                f"{' (first ' + str(MAX_ROWS) + ')' if len(rows) == MAX_ROWS else ''}"
+                f" in {ms:,.0f} ms, read-only session, "
+                f"{STATEMENT_TIMEOUT_MS // 1000} s statement timeout")
+            table = gr.Dataframe(
+                value=[[("NULL" if v is None else str(v)) for v in r] for r in rows],
+                headers=cols, visible=True, wrap=True)
+
+    trace += [
         "",
         "> Valid SQL is **not** a correct answer. A query can parse, reference "
-        "only real tables, run cleanly and still return the wrong rows — the "
+        "only real tables, run cleanly and still return the wrong rows - the "
         "most dangerous failure mode, and why the benchmark scores by "
         "execution against gold result sets rather than by inspection.",
     ]
-    return (sql or "(no SQL produced)"), "\n".join(trace), raw
+    return (sql or "(no SQL produced)"), chr(10).join(trace), raw, table
 
 
+# Held-out benchmark questions. The first two are ones the base model gets
+# wrong and this adapter gets right, which is the whole point of the Space.
 EXAMPLES = [
-    "Show payments with status completed.",
-    "How many orders are there in each status?",
-    "Who are the top 15 customers by revenue?",
+    "How many days on average pass between an order and its payment?",
+    "Which customers spent more than the average customer?",
+    "Show each employee alongside their manager's name.",
     "What is our actual revenue, excluding cancelled and returned orders?",
     "Which products have never been ordered?",
-    "Show the average product price per category.",
+    "Show total revenue per month in 2024.",
 ]
 
 CSS = """
@@ -244,12 +345,15 @@ statically validated before you see it.
             with gr.Column(scale=3):
                 sql_out = gr.Code(label="Generated SQL", language="sql")
                 trace_out = gr.Markdown()
+                rows_out = gr.Dataframe(label="Rows from PostgreSQL",
+                                        visible=False, wrap=True)
                 with gr.Accordion("Raw model output", open=False):
                     raw_out = gr.Textbox(label="", lines=6, show_copy_button=True)
 
-        run.click(ask, inputs=question, outputs=[sql_out, trace_out, raw_out])
+        run.click(ask, inputs=question,
+                  outputs=[sql_out, trace_out, raw_out, rows_out])
         question.submit(ask, inputs=question,
-                        outputs=[sql_out, trace_out, raw_out])
+                        outputs=[sql_out, trace_out, raw_out, rows_out])
 
     with gr.Tab("Benchmark"):
         gr.Markdown(

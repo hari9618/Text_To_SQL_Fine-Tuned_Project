@@ -1,5 +1,5 @@
 ---
-title: Enterprise Text-to-SQL
+title: Text-to-SQL - the fine-tuned model, live
 emoji: 🗄️
 colorFrom: gray
 colorTo: red
@@ -8,9 +8,9 @@ sdk_version: 5.9.1
 app_file: app.py
 pinned: false
 license: apache-2.0
-short_description: Fine-tuned Qwen3-8B turns business questions into PostgreSQL
+short_description: The fine-tuned adapter itself, live on ZeroGPU
 models:
-  - hari-krishna-ai/qwen3-8b-text2sql-qlora
+  - hari-krishna-ai/qwen3-8b-text2sql-qlora-v2
   - Qwen/Qwen3-8B
 tags:
   - text-to-sql
