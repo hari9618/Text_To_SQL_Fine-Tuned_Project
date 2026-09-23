@@ -84,11 +84,17 @@ that is known to run.
 Three Kaggle runs, in this order. All free-tier; total GPU time ~8 h, inside
 the 30 h weekly quota.
 
-| # | notebook | inputs | output | time |
-|---|---|---|---|---|
-| 1 | `kaggle_qlora_qwen3_8b_v2.ipynb` | dataset **`text2sql-sft-v2`** (from `Downloads/text2sql-sft-v2.zip`) | `adapter.zip` | ~6–7 h |
-| 2 | `kaggle_generate_finetuned.ipynb` | run 1's output **+** dataset **`text2sql-evalpack-v2`** (from `Downloads/text2sql-evalpack-v2.zip`) | `predictions_v2_final.jsonl` | ~35 min |
-| 3 | `kaggle_generate_finetuned.ipynb` | **only** dataset `text2sql-evalpack-v2` — no adapter | `predictions_base_v2_final.jsonl` | ~35 min |
+| # | notebook | inputs | output | time | done |
+|---|---|---|---|---|---|
+| 1 | `kaggle_qlora_qwen3_8b_v2.ipynb` | dataset **`text2sql-sft-v2`** | `adapter.zip` | **7 h 05 m** | yes |
+| 2 | `kaggle_generate_finetuned.ipynb` | run 1's output **+** `text2sql-evalpack-v2` | `predictions_v2_final.jsonl` | **32 m** | yes |
+| 3 | `kaggle_generate_finetuned.ipynb` | **only** `text2sql-evalpack-v2` — no adapter | `predictions_base_v2_final.jsonl` | **35 m** | yes |
+| 4 | `kaggle_repair_finetuned.ipynb` | run 1's output **+** `text2sql-evalpack-v2` **+** `text2sql-repairpack-v2` | `repairs.jsonl` | **10 m** | yes |
+
+Run 4 needs `scripts/export_repair_pack.py --version v2` first, and its zip
+uploaded as the `text2sql-repairpack-v2` dataset. The repair notebook is
+version-agnostic: it reads the failure count from the manifest and both
+fingerprints are unchanged between iterations.
 
 Run 3 is the v2 base-model row. With no adapter in its inputs the notebook
 loads the base model alone, same 4-bit load and greedy decoding, so the v2
@@ -107,8 +113,23 @@ env\Scripts\python.exe scripts/score_finetuned.py --version v2 --predictions "C:
 env\Scripts\python.exe scripts/score_finetuned.py --version v2 --predictions "C:\Users\dell\Downloads\predictions_v2_final.jsonl"
 ```
 
+Then `score_repair.py --version v2 --repairs repairs.jsonl`,
+`ablation_report.py --version v2` and `failure_analysis.py --version v2`.
+
 Unzip run 1's `adapter.zip` into `models/finetuned_v2/` first so the scorer
 can record the training config beside the result.
+
+### v2 outcome (frozen 2026-09-23)
+
+| | base | fine-tuned | + repair |
+| --- | ---: | ---: | ---: |
+| strict execution accuracy | 43.71 % | 68.43 % | **70.86 %** |
+| executable SQL | 95.58 % | 94.48 % | 98.23 % |
+| schema hallucination | 0.22 % | 3.75 % | 0.66 % |
+
+Training ended at train loss 0.083 / eval loss 0.145, against v1's 0.006 /
+0.335 - the same recipe fitting the training set less hard and generalising
+more than twice as well.
 
 ### v2, attempt 1: out of memory at step 34 — fixed
 

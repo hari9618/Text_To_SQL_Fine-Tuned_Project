@@ -92,11 +92,18 @@ Work strictly in order. **Do not implement future phases prematurely.**
 | 12     | Production-style API                              | **complete** |
 | 13     | Docker / deployment                               | **complete** (build unrun) |
 | 14     | Final benchmark, ablation study, documentation    | **complete** (5/5 configs) |
+| 15     | Iteration v2: benchmark, prompt, retrain, re-measure | **complete** (3/5 configs) |
 
 Update this table as phases complete.
 
-**All five ablation configurations are measured.** See the results table
-below and `experiments/ABLATION.md`.
+**All five v1 ablation configurations are measured** (`experiments/ABLATION.md`).
+**Three v2 configurations are measured** — 1, 3 and 5 (`experiments/v2/ABLATION.md`);
+2 and 4 are retrieval, which v1 measured as harmful on this 12-table schema,
+and are listed as *not measured* rather than omitted.
+
+**The current headline is 70.86 % (v2, configuration 5).** v1's 52.10 % is
+frozen and still reproducible. Read the Phase 15 result section before quoting
+either: most of both gains is column convention, not SQL reasoning.
 
 --- | --- | --- | --- | --- |
 | 5 fine-tuned + repair | `text2sql-repairpack.zip` | `kaggle_repair_finetuned.ipynb` | `repairs.jsonl` | `scripts/score_repair.py` |
@@ -500,7 +507,7 @@ reference date in the prompt (`x14`), and partitioned window functions
 This was done on the test set. Any fix it motivates is decided on validation
 and re-measured as a new configuration; 52.10 % stays frozen.
 
-### Phase 15 — iteration v2 (started 2026-09-18, GPU runs pending)
+### Phase 15 — iteration v2 (complete 2026-09-23)
 
 The failure analysis motivated a second iteration. **v1 stays frozen**; v2 is
 built beside it and selected with `--version v2` on every script
@@ -522,14 +529,70 @@ built beside it and selected with `--version v2` on every script
   base 34.22 %, base+retr 35.54 %, FT 39.07 %, FT+retr 35.32 %, FT+repair
   40.18 %. On the fair benchmark the v1 fine-tune's gain is **+4.85 pp, not
   +40** — the projection finding, confirmed. Under `experiments/v2/*_rescored/`.
-* **Pending GPU runs** (see `training/kaggle/README.md`, v2 section): train
-  v2 adapter -> `models/finetuned_v2/`; generate with it on the v2 eval pack;
-  generate with the *base* model on the same pack (both HF accounts'
-  monthly inference credits are exhausted, so the v2 base row is a 4-bit
-  Kaggle run, routed by the header's `model_kind`). Score with
-  `score_finetuned.py --version v2`; oracle self-test on that path = 100 %.
+* **GPU runs (all three complete, free Kaggle T4).** The v2 base row is a
+  4-bit Kaggle run rather than an API call — both HF accounts' monthly
+  inference credits were exhausted — so base and fine-tuned rows are
+  generated on identical hardware with identical decoding.
 
-The headline stays 52.10 % (v1) until the v2 adapter is measured.
+### Phase 15 result (frozen 2026-09-23) — the headline is now 70.86 %
+
+| metric | v2 base | v2 fine-tuned | **v2 + repair** |
+| --- | ---: | ---: | ---: |
+| **strict execution accuracy** | 43.71 % | 68.43 % | **70.86 %** |
+| projection-tolerant | 47.68 % | 68.43 % | 70.86 % |
+| executable SQL | 95.58 % | 94.48 % | **98.23 %** |
+| schema hallucination | 0.22 % | 3.75 % | **0.66 %** |
+
+By tier (base -> fine-tuned): easy 92.9 -> 100.0, medium 69.8 -> 96.8,
+hard 7.6 -> 54.9, very_hard 0.0 -> 13.9, enterprise 30.9 -> 46.4.
+
+**Training.** 1 epoch, 135 optimiser steps, **7.09 h** on one T4. Train loss
+**0.083**, eval loss 0.184 (step 50) -> 0.143 (100) -> **0.145** (final).
+Against v1's train 0.006 / eval 0.335 this is the same recipe fitting the
+training set *less* hard and generalising more than twice as well — v1 had
+memorised its templates. `models/finetuned_v2/` holds the configs; weights
+are git-ignored.
+
+**The finding that matters, and it is not the headline.** Both pipelines
+scored on the *identical* v2 test set:
+
+| | v1 pipeline | v2 pipeline |
+| --- | ---: | ---: |
+| strict | 40.18 % | **70.86 %** |
+| `projection_only` failures | 174 | **33** |
+| **`wrong_rows` (genuine logic errors)** | **85** | **84** |
+| row-level accuracy | 78.6 % | 78.1 % |
+
+**+30.68 pp of strict accuracy; genuinely wrong answers fell by one query.**
+The gain is the benchmark stating its column conventions and the glossary
+teaching them — not better SQL reasoning. This is the v1 projection finding
+confirmed by a clean controlled experiment, and it is the single most
+important thing to say about this project. Do not let the 70.86 % be quoted
+without it.
+
+**Repair, second time.** 25 detectable failures, 17 now execute (68.0 %
+success), 11 return the gold rows (44.0 % correctness) — far better than v1's
+57.9 % / 26.3 %, because the v2 adapter's failures are window-function syntax
+PostgreSQL names precisely (`WITHIN GROUP is required for ordered-set
+aggregate rank`) rather than semantic guesses. Repair again repaid the whole
+fine-tuning regression: executable SQL and hallucination return past the base
+model's level while the accuracy gain is kept.
+
+**Failure analysis v2** (`experiments/v2/FAILURE_ANALYSIS.md`): of 132
+failures, **84 `wrong_rows`**, 33 `projection_only`, 7 `wrong_values`, 8
+detectable. The distribution inverted from v1 (118 projection / 87 real).
+What is left is mostly real: business definitions the glossary states but the
+model misapplies on multi-join questions (~30), window functions
+(`very_hard` 13.9 %, ~31), entity linking (~10).
+
+**Release gate.** Passes for v2 (+27.15 pp over the v2 base). It first
+*blocked* the v2 candidate on a hard-coded v1 prompt fingerprint; the fix was
+to make it version-aware and stronger — candidate and baseline must now prove
+they rendered the **same** prompt and that it is the version's frozen one.
+
+**Still open:** the live demo serves the **base** model behind **prompt v1**
+(Render has no GPU). Deploying prompt v2 costs nothing and is worth ~+9.5 pp
+on the base model by measurement.
 
 ### Hardware constraint (important)
 
