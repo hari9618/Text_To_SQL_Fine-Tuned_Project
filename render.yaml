@@ -39,11 +39,18 @@ services:
       # (34.22 % -> 43.71 % strict, both scored on benchmark v2).
       - key: PROMPT_VERSION
         value: v2
-      # Failover chain, tried in order on each retry. Free providers flip
-      # between fine, busy and out-of-credits; depending on one took the demo
-      # down twice.
+      # Failover chain, tried in order. Free providers flip between fine,
+      # busy, timing out and out-of-credits; depending on one took the demo
+      # down twice. featherless-ai leads because on 2026-09-23 nscale was
+      # returning 504 only after a 121 s timeout, hanging every request.
       - key: HF_PROVIDER
-        value: nscale,featherless-ai
+        value: featherless-ai,nscale
+      # A person is waiting, so a dead provider is abandoned in seconds rather
+      # than the 120 s a benchmark run can afford.
+      - key: HF_TIMEOUT_S
+        value: "30"
+      - key: HF_MAX_RETRIES
+        value: "4"
 
       # Managed Postgres refuses plaintext connections.
       - key: PGSSLMODE

@@ -182,6 +182,7 @@ class HFInferenceModel(TextToSQLModel):
         params: InferenceParams | None = None,
         max_retries: int = 6,
         timeout_s: float = 120.0,
+        backoff_s: tuple[int, ...] | None = None,
         prompt=None,
     ) -> None:
         """``prompt`` is the prompt module (``src.model.prompt`` by default,
@@ -204,6 +205,11 @@ class HFInferenceModel(TextToSQLModel):
         # credits does not take the service down. Measured on 2026-09-19:
         # featherless-ai returned 'model is busy' and 402 while nscale answered
         # in 7 s - the exact reverse of Phase 4. Neither is reliable alone.
+        # A benchmark run can afford to wait out a throttle; an interactive
+        # request cannot, because a person is watching a spinner. The API
+        # passes a short chain of backoffs, the batch scripts keep the long one.
+        self.timeout_s = timeout_s
+        self.backoff_s = backoff_s or THROTTLE_BACKOFF_S
         self.providers = [p.strip() for p in provider.split(",") if p.strip()] or ["auto"]
         self.provider = self.providers[0]
         self.prompt = prompt or prompt_v1
@@ -310,8 +316,8 @@ class HFInferenceModel(TextToSQLModel):
                     if n_prov > 1 and attempt % n_prov != 0:
                         continue
                     if attempt < self.max_retries:
-                        time.sleep(THROTTLE_BACKOFF_S[
-                            min(attempt - 1, len(THROTTLE_BACKOFF_S) - 1)])
+                        time.sleep(self.backoff_s[
+                            min(attempt - 1, len(self.backoff_s) - 1)])
                         continue
                 # `seed` is optional in the provider API; drop it and retry
                 # rather than failing the whole run over an unsupported field.
@@ -340,6 +346,7 @@ class HFInferenceModel(TextToSQLModel):
             "model_revision": self.resolve_revision(),
             "provider": self.provider,
             "provider_chain": self.providers,
+            "timeout_s": self.timeout_s,
             "fine_tuned": False,
             "adapters": [],
             "inference_params": self.params.as_dict(),

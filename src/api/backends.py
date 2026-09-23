@@ -244,12 +244,22 @@ def build_model(backend: str | None = None) -> TextToSQLModel:
 def _build_hf() -> TextToSQLModel:
     from src.model.base_model import HFInferenceModel
 
+    # A failover chain. Free providers flip between fine, busy, timing out and
+    # out-of-credits, so the service tries each in turn rather than depending on
+    # one. Order matters: the first provider is tried first, and a dead one
+    # costs a full timeout before the next is reached.
+    #
+    # The remaining settings are the difference between a benchmark run and a
+    # web request. A batch run can afford a 120 s timeout and minutes of
+    # throttle backoff; here a person is watching a spinner, so a dead provider
+    # must be abandoned in seconds. On 2026-09-23 nscale was returning 504 after
+    # 121 s, which made every request appear to hang for ~166 s before failing.
     return HFInferenceModel(
         model_id=os.getenv("MODEL_ID", DEFAULT_MODEL_ID),
-        # A failover chain. Phase 4 found nscale throttling and featherless
-        # fine; 2026-09-19 found the reverse. Free providers flip, so the
-        # service tries each in turn rather than depending on one.
-        provider=os.getenv("HF_PROVIDER", "nscale,featherless-ai"),
+        provider=os.getenv("HF_PROVIDER", "featherless-ai,nscale"),
+        timeout_s=float(os.getenv("HF_TIMEOUT_S", "30")),
+        max_retries=int(os.getenv("HF_MAX_RETRIES", "4")),
+        backoff_s=(3, 8),
         params=InferenceParams(temperature=0.0, max_tokens=512),
         prompt=resolve_prompt(),
     )
