@@ -221,10 +221,13 @@ def _gpu_seconds(question: str) -> int:
     caller's remaining daily quota, and it adds overhead on top of the number
     given - asking for 110 s reserved 165 s, which burns a 300 s daily
     allowance in two clicks. Generation itself takes about 20 s; only the
-    first call also has to load and quantize the weights. So ask for a lot
-    once and very little thereafter.
+    first call also has to load and quantize the weights - and the weights are
+    cached on the Space's disk, so even that measured ~21 s. Asking 60 s there
+    keeps the reservation (90 s after overhead) inside the 120 s an
+    *unauthenticated* visitor gets, which is what most people arriving from a
+    link will be. A larger request would simply refuse them.
     """
-    return 90 if _MODEL is None else 25
+    return 60 if _MODEL is None else 25
 
 
 @spaces.GPU(duration=_gpu_seconds)
