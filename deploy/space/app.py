@@ -334,7 +334,7 @@ and fails when it names only the *symptom* (`ambiguous column reference`).
             f"""
 ## Training
 
-QLoRA on one **free Kaggle T4**, one epoch, 4 h 53 m.
+QLoRA on one **free Kaggle T4**, one epoch, 135 steps, 7 h 05 m.
 
 | | |
 |---|---|
@@ -342,12 +342,15 @@ QLoRA on one **free Kaggle T4**, one epoch, 4 h 53 m.
 | adapter | LoRA r=16, α=32, dropout 0.05, all 7 attention + MLP projections |
 | trainable | **43,646,976 of 4,761,498,624 — 0.917 %** |
 | loss | **completion-only**, prompt masked to `-100` |
-| supervised token share | **3.01 %** |
-| train / eval loss | 4.10 → 0.006 / 0.475 → **0.335** |
+| supervised token share | **2.41 %** |
+| train / eval loss | **0.083** / 0.184 → 0.143 → **0.145** |
 
-**Why completion-only loss is the detail that matters.** Each example is ~1,490
-prompt tokens and ~46 completion tokens, and the prompt is ~97 % schema,
-byte-identical across all 2,133 examples. Training on the full sequence sends
+Iteration 1 ended at train 0.006 / eval 0.335 — it had memorised its templates.
+This one fits the training set less hard and generalises more than twice as well.
+
+**Why completion-only loss is the detail that matters.** Each example is ~1,814
+prompt tokens and ~45 completion tokens, and the prompt is ~97 % schema,
+byte-identical across all 2,175 examples. Training on the full sequence sends
 ~97 % of the gradient into memorising a schema the model is *handed* at
 inference — and the loss curve looks excellent throughout, because predicting a
 constant is easy.

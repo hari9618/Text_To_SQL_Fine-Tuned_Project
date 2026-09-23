@@ -319,9 +319,10 @@ SELECT COUNT(customer_id) FROM customers WHERE country = 'India';</pre>
       <tr><td>base</td><td><code>Qwen/Qwen3-8B</code> @ <code>b968826d9c46</code>, 4-bit NF4</td></tr>
       <tr><td>adapter</td><td>LoRA r=16, α=32, all 7 attention + MLP projections</td></tr>
       <tr><td>trainable</td><td><b>43,646,976 of 4,761,498,624 — 0.917 %</b></td></tr>
-      <tr><td>hardware / time</td><td>one free Kaggle T4, 1 epoch, 4 h 53 m</td></tr>
+      <tr><td>hardware / time</td><td>one free Kaggle T4, 1 epoch, 7 h 05 m</td></tr>
       <tr><td>loss</td><td><b>completion-only</b> — prompt masked to −100</td></tr>
-      <tr><td>supervised token share</td><td><b>3.01 %</b></td></tr>
+      <tr><td>supervised token share</td><td><b>2.41 %</b></td></tr>
+      <tr><td>train / eval loss</td><td><b>0.083</b> / <b>0.145</b> &nbsp;<span style="opacity:.7">(iteration 1: 0.006 / 0.335 — memorised)</span></td></tr>
     </table>
     <p><b>Why completion-only loss is the detail that matters.</b> Each example is ~1,490 prompt
       tokens and ~46 completion tokens, and the prompt is ~97 % schema, byte-identical across all

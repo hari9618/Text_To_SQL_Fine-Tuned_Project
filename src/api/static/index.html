@@ -184,9 +184,9 @@ footer{max-width:1180px;margin:0 auto;padding:0 20px 40px;color:var(--muted);fon
 <!-- ────────────────────────── BENCHMARK ────────────────────────── -->
 <section id="panel-bench" class="hidden">
   <div class="stat">
-    <div class="box"><div class="lab">Base model</div><div class="val">10.82 %</div></div>
-    <div class="box"><div class="lab">Fine-tuned</div><div class="val up">50.99 %</div></div>
-    <div class="box"><div class="lab">Change</div><div class="val up">+40.17 pp</div></div>
+    <div class="box"><div class="lab">Base model</div><div class="val">43.71 %</div></div>
+    <div class="box"><div class="lab">Fine-tuned</div><div class="val up">68.43 %</div></div>
+    <div class="box"><div class="lab">+ self-correction</div><div class="val up">70.86 %</div></div>
     <div class="box"><div class="lab">Test questions</div><div class="val">453</div></div>
   </div>
 
@@ -196,16 +196,16 @@ footer{max-width:1180px;margin:0 auto;padding:0 20px 40px;color:var(--muted);fon
       Only the named component changes.</p>
     <div class="tablewrap">
       <table class="mtable">
-        <tr><th>metric</th><th class="n">1 · base</th><th class="n">2 · + retrieval</th>
-            <th class="n">3 · fine-tuned</th><th class="n">4</th><th class="n">5</th></tr>
-        <tr class="best"><td><b>strict execution accuracy</b></td><td class="n">10.82</td>
-            <td class="n">9.27</td><td class="n"><b>50.99</b></td><td class="n lab">—</td><td class="n lab">—</td></tr>
-        <tr><td>projection-tolerant</td><td class="n">45.92</td><td class="n">43.93</td>
-            <td class="n">50.99</td><td class="n lab">—</td><td class="n lab">—</td></tr>
-        <tr><td>executable SQL</td><td class="n">98.90</td><td class="n">92.27</td>
-            <td class="n">95.81</td><td class="n lab">—</td><td class="n lab">—</td></tr>
-        <tr><td>schema hallucination</td><td class="n">0.66</td><td class="n">3.31</td>
-            <td class="n">1.99</td><td class="n lab">—</td><td class="n lab">—</td></tr>
+        <tr><th>metric</th><th class="n">1 · base</th>
+            <th class="n">3 · fine-tuned</th><th class="n">5 · + repair</th></tr>
+        <tr class="best"><td><b>strict execution accuracy</b></td><td class="n">43.71</td>
+            <td class="n"><b>68.43</b></td><td class="n"><b>70.86</b></td></tr>
+        <tr><td>projection-tolerant</td><td class="n">47.68</td>
+            <td class="n">68.43</td><td class="n">70.86</td></tr>
+        <tr><td>executable SQL</td><td class="n">95.58</td>
+            <td class="n">94.48</td><td class="n"><b>98.23</b></td></tr>
+        <tr><td>schema hallucination</td><td class="n">0.22</td>
+            <td class="n">3.75</td><td class="n"><b>0.66</b></td></tr>
       </table>
     </div>
     <p class="sub" style="margin-top:10px">Configurations 4 (fine-tuned + retrieval) and
@@ -257,7 +257,7 @@ footer{max-width:1180px;margin:0 auto;padding:0 20px 40px;color:var(--muted);fon
 
   <details>
     <summary>Fine-tuning setup</summary>
-    <p class="sub" style="margin:0">QLoRA on a free Kaggle T4, one epoch, 4 h 53 m.
+    <p class="sub" style="margin:0">QLoRA on a free Kaggle T4, one epoch, 7 h 05 m.
       Base <code>Qwen/Qwen3-8B</code> in 4-bit NF4; LoRA r=16, α=32 on all seven attention and MLP
       projections — <b>43,646,976 trainable of 4,761,498,624 (0.917 %)</b>.
       Loss is computed on the SQL only: each example is ~1,490 prompt tokens and ~46 completion

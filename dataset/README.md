@@ -1,3 +1,9 @@
+> **This documents benchmark v1.** Iteration 2 lives under `dataset/v2/`
+> (3,087 examples, 2,175 / 459 / 453) and is built by
+> `dataset/generation/templates_v2.py`. The test split is pinned to v1:
+> same 453 ids, same 48 templates. Generate it with
+> `scripts/generate_benchmark.py --version v2`.
+
 # `dataset/`
 
 The Text-to-SQL benchmark: natural-language questions paired with the SQL that
