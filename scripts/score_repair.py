@@ -39,6 +39,7 @@ from src.evaluation.baseline import (  # noqa: E402
     load_examples,
     run_benchmark,
 )
+from src.benchmark_versions import add_version_argument, get as get_version  # noqa: E402
 from src.evaluation.metrics import summarise  # noqa: E402
 from src.evaluation.report import render_report  # noqa: E402
 from src.model.base_model import extract_sql  # noqa: E402
@@ -54,21 +55,17 @@ from src.sql.repair import diagnose  # noqa: E402
 sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 from score_finetuned import ReplayModel  # noqa: E402  (same replay semantics)
 
-TEST_SET = PROJECT_ROOT / "dataset" / "test" / "test.jsonl"
-FINETUNED_DIR = PROJECT_ROOT / "experiments" / "finetuned"
-REPAIR_DIR = PROJECT_ROOT / "experiments" / "repair"
-ADAPTER_DIR = PROJECT_ROOT / "models" / "finetuned"
-
 EXPECTED_SCHEMA_FP = "d03619e711661bc5"
 
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Phase 11 repair scoring")
+    add_version_argument(p)
     p.add_argument("--repairs", required=True,
                    help="repairs.jsonl downloaded from the GPU host")
-    p.add_argument("--generations",
-                   default=str(FINETUNED_DIR / "generations.jsonl"),
-                   help="the Phase 10 generations to fold repairs into")
+    p.add_argument("--generations", default=None,
+                   help="the Phase 10 generations to fold repairs into "
+                        "(default: this version's configuration 3)")
     p.add_argument("--tag", default=None)
     return p.parse_args()
 
@@ -89,9 +86,16 @@ def load_jsonl(path: Path) -> tuple[list[dict], dict]:
 
 def main() -> int:
     args = parse_args()
+    version = get_version(args.version)
+    TEST_SET = version.split("test")
+    FINETUNED_DIR = version.experiments_root / "finetuned"
+    REPAIR_DIR = version.experiments_root / "repair"
+    ADAPTER_DIR = PROJECT_ROOT / "models" / (
+        "finetuned" if version.is_v1 else f"finetuned_{version.name}")
+    BASELINE_SUMMARY = version.experiments_root / "baseline" / "summary.json"
 
     repairs_path = Path(args.repairs)
-    generations_path = Path(args.generations)
+    generations_path = Path(args.generations or FINETUNED_DIR / "generations.jsonl")
     for path in (repairs_path, generations_path):
         if not path.exists():
             print(f"[error] not found: {path}", file=sys.stderr)
@@ -104,7 +108,7 @@ def main() -> int:
         return 2
 
     print("=" * 72)
-    print("PHASE 11 - SQL REPAIR (ablation configuration 5)")
+    print(f"PHASE 11 - SQL REPAIR (ablation configuration 5, benchmark {version.name})")
     print("=" * 72)
 
     repair_rows, header = load_jsonl(repairs_path)
@@ -291,7 +295,7 @@ def main() -> int:
 
     # ---- three-way comparison ---------------------------------------------
     rows = []
-    for label, path in (("base", PROJECT_ROOT / "experiments/baseline/summary.json"),
+    for label, path in (("base", BASELINE_SUMMARY),
                         ("fine-tuned", FINETUNED_DIR / "summary.json")):
         if path.exists():
             rows.append((label, json.loads(path.read_text(encoding="utf-8"))))
