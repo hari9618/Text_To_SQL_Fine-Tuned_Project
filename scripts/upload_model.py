@@ -42,27 +42,33 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from src.benchmark_versions import add_version_argument, get as get_version  # noqa: E402
 from src.sql.config import PROJECT_ROOT  # noqa: E402
 
-ADAPTER_DIR = PROJECT_ROOT / "models" / "finetuned"
-FINAL = ADAPTER_DIR / "final_adapter"
-CARD = ADAPTER_DIR / "MODEL_CARD.md"
+def adapter_files(version) -> tuple[Path, list[tuple[Path, str]]]:
+    """Where this version's adapter lives, and exactly what gets published.
 
-# (source, name in the repo). Anything not listed is not published.
-FILES: list[tuple[Path, str]] = [
-    (FINAL / "adapter_model.safetensors", "adapter_model.safetensors"),
-    (FINAL / "adapter_config.json", "adapter_config.json"),
-    (FINAL / "tokenizer.json", "tokenizer.json"),
-    (FINAL / "tokenizer_config.json", "tokenizer_config.json"),
-    (FINAL / "chat_template.jinja", "chat_template.jinja"),
-    (ADAPTER_DIR / "training_config.json", "training_config.json"),
-    (ADAPTER_DIR / "training_metrics.json", "training_metrics.json"),
-    (CARD, "README.md"),
-]
+    Anything not listed is not uploaded - in particular the base weights,
+    which are 16 GB and already on the Hub.
+    """
+    adapter_dir = PROJECT_ROOT / "models" / (
+        "finetuned" if version.is_v1 else f"finetuned_{version.name}")
+    final = adapter_dir / "final_adapter"
+    return adapter_dir, [
+        (final / "adapter_model.safetensors", "adapter_model.safetensors"),
+        (final / "adapter_config.json", "adapter_config.json"),
+        (final / "tokenizer.json", "tokenizer.json"),
+        (final / "tokenizer_config.json", "tokenizer_config.json"),
+        (final / "chat_template.jinja", "chat_template.jinja"),
+        (adapter_dir / "training_config.json", "training_config.json"),
+        (adapter_dir / "training_metrics.json", "training_metrics.json"),
+        (adapter_dir / "MODEL_CARD.md", "README.md"),
+    ]
 
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Publish the adapter to the HF Hub")
+    add_version_argument(p)
     p.add_argument("--repo", required=True,
                    help="target repo id, e.g. yourname/qwen3-8b-text2sql-qlora")
     p.add_argument("--push", action="store_true",
@@ -76,6 +82,8 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
+    version = get_version(args.version)
+    ADAPTER_DIR, FILES = adapter_files(version)
 
     print("=" * 74)
     print("PUBLISH ADAPTER TO THE HUGGING FACE HUB")
@@ -108,7 +116,7 @@ def main() -> int:
     # The base weights must never be uploaded: 16 GB already on the Hub.
     assert not any("model-0000" in d for _, d in FILES), "base weights included"
 
-    card = CARD.read_text(encoding="utf-8")
+    card = (ADAPTER_DIR / "MODEL_CARD.md").read_text(encoding="utf-8")
     if "<your-username>" in card:
         card = card.replace("<your-username>/qwen3-8b-text2sql-qlora", args.repo)
         print(f"Model Card: substituted the repo id into the usage example")

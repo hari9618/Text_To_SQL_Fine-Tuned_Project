@@ -33,10 +33,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from src.benchmark_versions import add_version_argument, get as get_version
 from src.sql.config import PROJECT_ROOT  # noqa: E402
 
-CARD = PROJECT_ROOT / "dataset" / "DATASET_CARD.md"
-SCHEMA_CTX = PROJECT_ROOT / "experiments/finetuned/evalpack/schema_context.txt"
 
 
 def lf(data: bytes) -> bytes:
@@ -49,19 +48,26 @@ def lf(data: bytes) -> bytes:
     """
     return data.replace(b"\r\n", b"\n")
 
-FILES: list[tuple[Path, str]] = [
-    (PROJECT_ROOT / "dataset/train/train.jsonl", "train.jsonl"),
-    (PROJECT_ROOT / "dataset/validation/validation.jsonl", "validation.jsonl"),
-    (PROJECT_ROOT / "dataset/test/test.jsonl", "test.jsonl"),
-    (PROJECT_ROOT / "database/schema.sql", "schema.sql"),
-    (PROJECT_ROOT / "experiments/finetuned/evalpack/schema_context.txt",
-     "schema_context.txt"),
-    (CARD, "README.md"),
-]
+def dataset_files(version) -> tuple[Path, Path, list[tuple[Path, str]]]:
+    """This version's splits, plus the schema the questions were written
+    against and the rendered schema context the model is shown."""
+    card = PROJECT_ROOT / "dataset" / "DATASET_CARD.md"
+    schema_ctx = version.experiments_root / "finetuned" / "evalpack" / "schema_context.txt"
+    if not schema_ctx.exists():   # the eval pack is the canonical rendering
+        schema_ctx = PROJECT_ROOT / "experiments/finetuned/evalpack/schema_context.txt"
+    return card, schema_ctx, [
+        (version.split("train"), "train.jsonl"),
+        (version.split("validation"), "validation.jsonl"),
+        (version.split("test"), "test.jsonl"),
+        (PROJECT_ROOT / "database/schema.sql", "schema.sql"),
+        (schema_ctx, "schema_context.txt"),
+        (card, "README.md"),
+    ]
 
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Publish the benchmark dataset")
+    add_version_argument(p)
     p.add_argument("--repo", required=True)
     p.add_argument("--push", action="store_true")
     p.add_argument("--private", action="store_true")
@@ -71,9 +77,11 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
+    version = get_version(args.version)
+    CARD, SCHEMA_CTX, FILES = dataset_files(version)
 
     print("=" * 74)
-    print("PUBLISH BENCHMARK DATASET")
+    print(f"PUBLISH BENCHMARK DATASET  (benchmark {version.name})")
     print("=" * 74)
     print(f"repo : {args.repo}{'  (private)' if args.private else '  (public)'}")
     print(f"mode : {'PUSH' if args.push else 'DRY RUN - nothing will be written'}")
@@ -87,7 +95,7 @@ def main() -> int:
     # ---- integrity, before anything is published --------------------------
     splits = {}
     for name in ("train", "validation", "test"):
-        path = PROJECT_ROOT / f"dataset/{name}/{name}.jsonl"
+        path = version.split(name)
         rows = [json.loads(l) for l in path.read_text(encoding="utf-8").splitlines()
                 if l.strip()]
         splits[name] = rows

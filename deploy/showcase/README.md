@@ -9,7 +9,10 @@ pinned: false
 license: apache-2.0
 short_description: Ask the live pipeline; explore 453 scored answers
 models:
+  - hari-krishna-ai/qwen3-8b-text2sql-qlora-v2
   - hari-krishna-ai/qwen3-8b-text2sql-qlora
+datasets:
+  - hari-krishna-ai/enterprise-text-to-sql-benchmark
 tags:
   - text-to-sql
   - qlora
