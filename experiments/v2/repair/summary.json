@@ -52,18 +52,18 @@
       "max_ms": 32331.85
     },
     "execution": {
-      "mean_ms": 67.36,
-      "median_ms": 18.94,
-      "p90_ms": 219.67,
-      "min_ms": 0.7,
-      "max_ms": 551.87
+      "mean_ms": 67.6,
+      "median_ms": 25.13,
+      "p90_ms": 202.4,
+      "min_ms": 0.65,
+      "max_ms": 577.83
     },
     "total": {
-      "mean_ms": 5211.79,
-      "median_ms": 4209.67,
-      "p90_ms": 6311.9,
-      "min_ms": 2875.48,
-      "max_ms": 32801.4
+      "mean_ms": 5212.03,
+      "median_ms": 4210.25,
+      "p90_ms": 6319.29,
+      "min_ms": 2889.16,
+      "max_ms": 32779.61
     }
   },
   "tokens": {
@@ -1115,8 +1115,8 @@
       }
     },
     "prompt": {
-      "version": "v1",
-      "fingerprint": "8288e41a496531a9"
+      "version": "v2",
+      "fingerprint": "4e72cc5f722ce436"
     },
     "schema_context": {
       "mode": "full_schema_no_retrieval",

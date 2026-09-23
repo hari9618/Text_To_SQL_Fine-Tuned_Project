@@ -32,11 +32,8 @@ from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from src.benchmark_versions import add_version_argument, get as get_version  # noqa: E402
 from src.sql.config import PROJECT_ROOT  # noqa: E402
-
-TEST_SET = PROJECT_ROOT / "dataset" / "test" / "test.jsonl"
-EXPERIMENTS = PROJECT_ROOT / "experiments"
-OUT = EXPERIMENTS / "ABLATION.md"
 
 DIFFICULTY_ORDER = ["easy", "medium", "hard", "very_hard", "very hard",
                     "enterprise"]
@@ -100,9 +97,9 @@ METRICS = [
 ]
 
 
-def load_configs() -> list[Config]:
+def load_configs(experiments: Path) -> list[Config]:
     for cfg in CONFIGS:
-        directory = EXPERIMENTS / cfg.directory
+        directory = experiments / cfg.directory
         summary_path = directory / "summary.json"
         if not summary_path.exists():
             cfg.missing_reason = f"no {cfg.directory}/summary.json"
@@ -158,10 +155,16 @@ def fmt(value: float | None, width: int = 12) -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Phase 14 ablation study")
-    parser.add_argument("--out", default=str(OUT))
+    add_version_argument(parser)
+    parser.add_argument("--out", default=None)
     args = parser.parse_args()
 
-    configs = load_configs()
+    version = get_version(args.version)
+    experiments = version.experiments_root
+    TEST_SET = version.split("test")
+    args.out = args.out or str(experiments / "ABLATION.md")
+
+    configs = load_configs(experiments)
     measured = [c for c in configs if c.measured]
     gold = {}
     if TEST_SET.exists():
@@ -170,7 +173,7 @@ def main() -> int:
                 if l.strip()}
 
     print("=" * 78)
-    print("PHASE 14 - ABLATION STUDY")
+    print(f"PHASE 14 - ABLATION STUDY  (benchmark {version.name})")
     print("=" * 78)
     print(f"measured: {len(measured)} of {len(configs)} configurations")
     for cfg in configs:

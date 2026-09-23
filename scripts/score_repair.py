@@ -215,7 +215,8 @@ def main() -> int:
         model = ReplayModel(adapter_meta)
 
         metadata = build_run_metadata(
-            model, TEST_SET, conn, schema_fp, schema_text, schema_info.tables)
+            model, TEST_SET, conn, schema_fp, schema_text, schema_info.tables,
+            prompt=version.prompt())
         metadata["model"]["repair"] = {
             "enabled": True,
             "prompt_version": REPAIR_PROMPT_VERSION,

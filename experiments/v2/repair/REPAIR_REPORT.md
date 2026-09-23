@@ -20,7 +20,7 @@ is to establish an honest floor, not a good score.
 | Schema hallucination | 0.66 % |
 | Mean generation latency | 5145 ms |
 | Median generation latency | 4207 ms |
-| SQL execution latency (median) | 19 ms |
+| SQL execution latency (median) | 25 ms |
 
 Latency is measured over first-attempt calls only (0
 of 453 calls were retried after provider throttling; counting
@@ -338,7 +338,7 @@ SELECT c.category_name, AVG(p.unit_price) AS average_price FROM categories c JOI
 | Fine-tuned | True |
 | Adapters | [{'path': 'models/finetuned/final_adapter', 'method': 'qlora', 'r': 16, 'alpha': 32, 'dropout': 0.05, 'target_modules': ['q_proj', 'k_proj', 'v_proj', 'o_proj', 'gate_proj', 'up_proj', 'down_proj'], 'trainable_params': 43646976, 'epochs': 1.0, 'train_on_completion_only': True}] |
 | Inference params | `None` |
-| Prompt version | `v1` (hash `8288e41a496531a9`) |
+| Prompt version | `v2` (hash `4e72cc5f722ce436`) |
 | Schema mode | `full_schema_no_retrieval` (hash `d03619e711661bc5`) |
 | Dataset | `C:/Users/dell/Desktop/Enterprice-text to -SQL/dataset/v2/test/test.jsonl` (hash `d7ec17963f69c87d`) |
 | Database | PostgreSQL 18.1 on x86_64-windows |
