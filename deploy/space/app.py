@@ -214,7 +214,20 @@ def run_sql(sql: str):
         conn.close()
 
 
-@spaces.GPU(duration=110)
+def _gpu_seconds(question: str) -> int:
+    """How long to reserve on the GPU for this call.
+
+    ZeroGPU admits a task only if the *requested* duration fits in the
+    caller's remaining daily quota, and it adds overhead on top of the number
+    given - asking for 110 s reserved 165 s, which burns a 300 s daily
+    allowance in two clicks. Generation itself takes about 20 s; only the
+    first call also has to load and quantize the weights. So ask for a lot
+    once and very little thereafter.
+    """
+    return 90 if _MODEL is None else 25
+
+
+@spaces.GPU(duration=_gpu_seconds)
 def generate(question: str) -> str:
     model = get_model()
     messages = [
