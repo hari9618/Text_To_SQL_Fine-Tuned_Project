@@ -369,9 +369,14 @@ role, read-only sessions with statement timeouts applied on pool checkout, and
 static rejection of anything that is not a single read-only statement over real
 tables.
 
-`MODEL_BACKEND` picks what is served: `hf` (base model, 10.82 %), `local` (the
-adapter, 50.99 %, needs CUDA), `stub` (tests). **The default is `hf`, the base
-model**, because this laptop has no GPU.
+`MODEL_BACKEND` picks what is served: `hf` (base model), `local` (the adapter,
+needs CUDA), `stub` (tests). **The default is `hf`, the base model**, because
+this laptop has no GPU — and so does the deployed Render service, which is why
+the live demo is not the 70.86 % pipeline.
+
+The deployed API also still renders **prompt v1**. Moving it to prompt v2 needs
+no GPU and no money and is worth ~+9.5 pp on the base model by measurement
+(34.22 % -> 43.71 % when both are scored on the v2 benchmark). Not yet done.
 
 **Phase 13 - Docker.** `docker/Dockerfile` (API, no torch, non-root,
 healthcheck), `docker/Dockerfile.tools` (seeding), `docker-compose.yml`

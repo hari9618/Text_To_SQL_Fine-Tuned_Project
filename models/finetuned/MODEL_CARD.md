@@ -15,7 +15,17 @@ language:
   - en
 ---
 
-# Qwen3-8B Text-to-SQL (QLoRA adapter)
+# Qwen3-8B Text-to-SQL (QLoRA adapter, iteration 1)
+
+> **A second iteration supersedes this adapter.** It scores **70.86 %** against
+> this one's 52.10 %, and more importantly it was measured on a benchmark that
+> does not punish a model for guessing a column list. See
+> `models/finetuned_v2/MODEL_CARD.md`.
+>
+> This card is kept unedited because the numbers below are frozen and still
+> reproducible. Read the iteration-2 card before comparing the two: replaying
+> *this* adapter's predictions against the v2 benchmark gives 40.18 %, not
+> 52.10 %, and the difference is entirely column conventions.
 
 A LoRA adapter that turns **Qwen3-8B** into a PostgreSQL text-to-SQL model for a
 12-table enterprise schema (sales, catalogue, logistics, HR).

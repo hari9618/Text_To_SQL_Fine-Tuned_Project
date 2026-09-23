@@ -27,19 +27,34 @@ configs:
 
 # Enterprise Text-to-SQL Benchmark
 
-**3,045 natural-language questions paired with executable PostgreSQL**, over a
+**3,087 natural-language questions paired with executable PostgreSQL**, over a
 12-table enterprise schema (sales, catalogue, logistics, HR).
 
 Built to answer one question honestly: *does fine-tuning actually improve
 text-to-SQL?* On this benchmark, a QLoRA fine-tune of Qwen3-8B took strict
-execution accuracy from **10.82 % to 50.99 %** — and the benchmark is designed
-so that number cannot be inflated by leakage or by string-matching.
+execution accuracy from **43.71 % to 68.43 %**, and **70.86 %** with a
+self-correction loop — and the benchmark is designed so that number cannot be
+inflated by leakage or by string-matching.
 
 | split | rows | templates |
 |---|---:|---:|
-| train | 2,133 | 74 |
+| train | 2,175 | 79 |
 | validation | 459 | 52 |
 | **test** | **453** | **48** |
+
+> **This is version 2 of the benchmark.** Version 1 had a flaw worth
+> understanding before you use either: many of its questions — *"Show orders
+> placed in 2023"* — never say which **columns** to return, so a model that
+> found exactly the right rows scored zero for picking a different column list.
+> That made the v1 base model look far worse than it was (10.82 %) and the
+> fine-tuning gain look far larger than it was (+40 pp).
+>
+> v2 fixes this by five documented rules: whole row (`SELECT *`) when no columns
+> are named, consistent money and month conventions, one ambiguous paraphrase
+> reworded, and five train-only templates covering `PARTITION BY` and day
+> arithmetic. **The test split is pinned to v1** — same 453 ids, same 48
+> templates, 445 of 453 questions byte-identical — so the two versions are
+> directly comparable and v2 is not an easier test set.
 
 **All three splits share zero templates with each other** — 74 / 52 / 48, no
 overlap in any pair. Splitting is by *template equivalence group*, never by row,
@@ -137,12 +152,21 @@ one that changes overnight.
 Qwen3-8B, evaluated by execution against the reference database. Five
 configurations, same questions, same harness — only the named component changes.
 
-| metric | base | + retrieval | fine-tuned | FT + retrieval | **FT + repair** |
-|---|---:|---:|---:|---:|---:|
-| **strict execution accuracy** | 10.82 % | 9.27 % | 50.99 % | 41.72 % | **52.10 %** |
-| projection-tolerant | 45.92 % | 43.93 % | 50.99 % | 41.72 % | **52.10 %** |
-| executable SQL | 98.90 % | 92.27 % | 95.81 % | 94.92 % | **98.23 %** |
-| schema hallucination | 0.66 % | 3.31 % | 1.99 % | 3.53 % | **0.66 %** |
+| metric | base | fine-tuned | **FT + repair** |
+|---|---:|---:|---:|
+| **strict execution accuracy** | 43.71 % | 68.43 % | **70.86 %** |
+| projection-tolerant | 47.68 % | 68.43 % | **70.86 %** |
+| executable SQL | 95.58 % | 94.48 % | **98.23 %** |
+| schema hallucination | 0.22 % | 3.75 % | **0.66 %** |
+
+**What that gain is, stated honestly.** Replaying the v1 pipeline's predictions
+against this benchmark's gold gives 40.18 % strict, against 70.86 % for the v2
+pipeline — but `wrong_rows`, the count of genuinely wrong answers, goes 85 → 84
+and row-level accuracy holds at ~78 %. **The headline moved 30 points because
+the benchmark and the prompt stopped disagreeing about what a correct answer
+looks like, not because the SQL got better.** If you benchmark a model here,
+report projection-tolerant accuracy alongside strict or you will draw the same
+wrong conclusion v1 did.
 
 Adapter: [`hari-krishna-ai/qwen3-8b-text2sql-qlora`](https://huggingface.co/hari-krishna-ai/qwen3-8b-text2sql-qlora)
 
@@ -178,7 +202,7 @@ on this dataset, report both numbers.**
    predicates that match zero rows measures nothing.
 3. **Every gold query executed** against the reference database; the result set
    is fingerprinted and stored. Queries that error are rejected, not shipped.
-4. **Validation** — 3,045 of 3,045 examples pass parse, schema-grounding and
+4. **Validation** — 3,087 of 3,087 examples pass parse, schema-grounding and
    execution checks.
 5. **Split by template equivalence group.** All paraphrases and all slot
    variants of one template land in the same split, which is what makes the
