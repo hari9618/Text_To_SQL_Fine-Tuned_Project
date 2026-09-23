@@ -86,8 +86,8 @@ the URL in a browser for the demo UI.
 the link to someone. Lead with the Hugging Face Space instead — it is static,
 always instant — and keep this URL for showing live SQL execution.
 
-**It serves the base model, not the fine-tuned one** (10.82 % rather than
-50.99 % strict execution accuracy). The adapter needs a GPU; the free tier has
+**It serves the base model, not the fine-tuned one** (43.71 % rather than
+70.86 % strict execution accuracy). The adapter needs a GPU; the free tier has
 none. Say so rather than let someone assume otherwise: the deployment
 demonstrates the *pipeline*, the benchmark demonstrates the *fine-tuning*.
 

@@ -224,13 +224,13 @@ Ask a business question in plain English. A **QLoRA-fine-tuned Qwen3-8B**
 turns it into PostgreSQL against a 12-table enterprise schema, and the SQL is
 statically validated before you see it.
 
-**Fine-tuning took strict execution accuracy from 10.82 % → 50.99 %, and
-52.10 % with a self-correction loop**, measured on 453 held-out questions by
+**Fine-tuning took strict execution accuracy from 43.71 % → 68.43 %, and
+70.86 % with a self-correction loop**, measured on 453 held-out questions by
 *executing* every query against a real database — never by string similarity.
 
 [📦 Model](https://huggingface.co/hari-krishna-ai/qwen3-8b-text2sql-qlora)
 &nbsp;·&nbsp; adapter: 43.6 M trainable params (0.917 % of the model)
-&nbsp;·&nbsp; trained on one free T4 in 4 h 53 m
+&nbsp;·&nbsp; trained on one free T4 in 7 h 05 m
 """, elem_classes="headline")
 
     with gr.Tab("Ask"):
@@ -259,37 +259,51 @@ statically validated before you see it.
 Every column scored on the same questions, same harness, same database. Only
 the named component changes.
 
-| metric | 1 base | 2 + retrieval | 3 fine-tuned | 4 FT + retrieval | 5 **FT + repair** |
-|---|---:|---:|---:|---:|---:|
-| **strict execution accuracy** | 10.82 % | 9.27 % | 50.99 % | 41.72 % | **52.10 %** |
-| projection-tolerant | 45.92 % | 43.93 % | 50.99 % | 41.72 % | **52.10 %** |
-| executable SQL | 98.90 % | 92.27 % | 95.81 % | 94.92 % | **98.23 %** |
-| schema hallucination | 0.66 % | 3.31 % | 1.99 % | 3.53 % | **0.66 %** |
+| metric | 1 base | 3 fine-tuned | 5 **FT + repair** |
+|---|---:|---:|---:|
+| **strict execution accuracy** | 43.71 % | 68.43 % | **70.86 %** |
+| projection-tolerant | 47.68 % | 68.43 % | **70.86 %** |
+| executable SQL | 95.58 % | 94.48 % | **98.23 %** |
+| schema hallucination | 0.22 % | 3.75 % | **0.66 %** |
+
+Configurations 2 and 4 are schema retrieval, which the first iteration measured
+as *harmful* on this 12-table schema. They are listed as not measured on v2
+rather than quietly dropped.
 
 ### By difficulty — base → fine-tuned
 
 | tier | n | base | fine-tuned | Δ |
 |---|---:|---:|---:|---:|
-| easy | 126 | 0.0 % | 23.0 % | +23.0 |
-| medium | 63 | 52.4 % | 52.4 % | **+0.0** |
-| hard | 144 | 3.5 % | **84.7 %** | **+81.2** |
-| enterprise | 84 | 13.1 % | 52.4 % | +39.3 |
+| easy | 126 | 92.9 % | **100.0 %** | +7.1 |
+| medium | 63 | 69.8 % | **96.8 %** | +27.0 |
+| hard | 144 | 7.6 % | **54.9 %** | **+47.2** |
+| very_hard | 36 | 0.0 % | 13.9 % | +13.9 |
+| enterprise | 84 | 30.9 % | 46.4 % | +15.5 |
 
-### Where the gain actually came from
+### The number went up 30 points. The SQL barely improved.
 
-| failure mode | base | fine-tuned |
+This is the project's second iteration. The first scored 52.10 %, and its
+failure analysis showed most of that gain was the model learning which
+*columns* the benchmark wanted, not better SQL. So the benchmark was rebuilt to
+state its conventions, a business glossary was added to the prompt, and the
+model retrained.
+
+Scoring **both pipelines on this identical test set**:
+
+| | iteration 1 | iteration 2 |
 |---|---:|---:|
-| right rows, **wrong columns** | 159 | **0** |
-| genuinely wrong rows | 240 | 203 |
+| strict accuracy | 40.18 % | **70.86 %** |
+| right rows, **wrong columns** | 174 | **33** |
+| **genuinely wrong rows** | **85** | **84** |
+| row-level accuracy | 78.6 % | 78.1 % |
 
-The benchmark's largest failure was returning correct data under a different
-column projection — *"show orders in 2023"* never says which columns. That went
-to zero. Genuinely wrong answers fell far less.
+**Genuinely wrong answers fell by one query.** The model finds the right rows
+about 78 % of the time and that did not change. The entire +30.68 pp is the
+benchmark and the prompt finally agreeing on what a correct answer looks like.
 
-**So most of the +40 points is the model learning this database's column
-conventions, not becoming dramatically better at SQL logic.** The `hard` tier
-(+81.2 pp) is where reasoning genuinely improved. `medium` did not move at all,
-and that is unexplained.
+That is the most useful thing this project has to say, and it is only visible
+because the harness scores projection separately instead of reporting one
+number.
 
 ### Schema retrieval made things worse — twice
 

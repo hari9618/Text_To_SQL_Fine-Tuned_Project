@@ -110,8 +110,8 @@ Space and ask something.
 
 ## Which model the demo serves
 
-**The public demo serves the base model, not the fine-tuned one** — 10.82 %
-rather than 50.99 % strict execution accuracy. The adapter needs a GPU, and both
+**The public demo serves the base model, not the fine-tuned one** — 43.71 %
+rather than 70.86 % strict execution accuracy. The adapter needs a GPU, and both
 the free Space tier and this project's laptop have none.
 
 That is worth saying out loud in an interview rather than hiding: the deployed

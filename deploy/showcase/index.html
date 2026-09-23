@@ -134,17 +134,24 @@ p{max-width:78ch}
     <h1>Enterprise Text-to-SQL <span>— fine-tuning, measured</span></h1>
     <p class="lede">
       A QLoRA-fine-tuned Qwen3-8B turns business questions into PostgreSQL.
-      Fine-tuning took strict execution accuracy from <b>10.82&nbsp;%</b> to
-      <b>50.99&nbsp;%</b>, and <b>52.10&nbsp;%</b> with a self-correction loop —
+      Fine-tuning took strict execution accuracy from <b>43.71&nbsp;%</b> to
+      <b>68.43&nbsp;%</b>, and <b>70.86&nbsp;%</b> with a self-correction loop —
       measured on 453 held-out questions by <b>executing</b> every query against
       a real database, never by string similarity.
+      <br><br>
+      This is the project's <b>second</b> iteration. The first scored 52.10&nbsp;%, and
+      analysing its failures showed most of that gain was the model learning which
+      <i>columns</i> the benchmark wanted. Scoring both pipelines on this identical test set:
+      strict accuracy <b>40.18&nbsp;% → 70.86&nbsp;%</b>, while genuinely wrong row sets went
+      <b>85 → 84</b>. The headline moved 30 points; the SQL barely improved. That is the
+      honest read, and it is only visible because the harness separates the two.
     </p>
     <div class="links">
       <a href="https://huggingface.co/hari-krishna-ai/qwen3-8b-text2sql-qlora">📦 Model</a>
       <a href="https://huggingface.co/datasets/hari-krishna-ai/enterprise-text-to-sql-benchmark">📊 Dataset</a>
       <a href="https://github.com/hari9618/Text_To_SQL_Fine-Tuned_Project">🐙 Code</a>
       <a href="https://text2sql-api-mc8q.onrender.com/docs">⚙️ API docs</a>
-      <span class="count">453 questions · 5 configurations · every prediction below is real</span>
+      <span class="count">453 questions · benchmark v2 · every prediction below is real</span>
     </div>
   </div>
   <nav>
@@ -164,9 +171,9 @@ p{max-width:78ch}
     and repaired once if it fails. You see every step.
     <br><br>
     <b>Honest note:</b> free hosting has no GPU, so this text box is served by the <b>base</b>
-    Qwen3-8B (10.82 % strict on the benchmark), not the fine-tuned adapter (52.10 %). For any of
-    the 453 benchmark questions, the fine-tuned model's <i>recorded</i> answer is shown next to the
-    live one so you can compare. Try the dashed chip to watch the guardrails refuse a write.
+    Qwen3-8B, not the fine-tuned adapter (70.86 %). For any of the 453 benchmark questions, the
+    fine-tuned model's <i>recorded</i> answer is shown next to the live one so you can compare.
+    Try the dashed chip to watch the guardrails refuse a write.
   </div>
 
   <div class="card">
@@ -210,9 +217,9 @@ p{max-width:78ch}
 
 <section id="panel-bench" class="hidden">
   <div class="stat">
-    <div class="box"><div class="lab">Base model</div><div class="val">10.82 %</div></div>
-    <div class="box"><div class="lab">Fine-tuned</div><div class="val up">50.99 %</div></div>
-    <div class="box"><div class="lab">+ self-correction</div><div class="val up">52.10 %</div></div>
+    <div class="box"><div class="lab">Base model</div><div class="val">43.71 %</div></div>
+    <div class="box"><div class="lab">Fine-tuned</div><div class="val up">68.43 %</div></div>
+    <div class="box"><div class="lab">+ self-correction</div><div class="val up">70.86 %</div></div>
     <div class="box"><div class="lab">Trainable params</div><div class="val">0.917 %</div></div>
   </div>
 

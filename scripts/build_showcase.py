@@ -22,21 +22,25 @@ from __future__ import annotations
 
 import json
 import shutil
+import argparse
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from src.benchmark_versions import add_version_argument, get as get_version  # noqa: E402
 from src.sql.config import PROJECT_ROOT  # noqa: E402
 
-TEST_SET = PROJECT_ROOT / "dataset" / "test" / "test.jsonl"
 OUT = PROJECT_ROOT / "deploy" / "showcase"
 
+# Configuration key -> (directory under the version's experiments root, label).
+# A configuration with no results on this version is simply skipped, so the
+# page can never show a row the benchmark did not measure.
 CONFIGS = [
-    ("base", "experiments/baseline", "Base model"),
-    ("ft", "experiments/finetuned", "Fine-tuned"),
-    ("ftr", "experiments/finetuned_retrieval", "Fine-tuned + retrieval"),
-    ("repair", "experiments/repair", "Fine-tuned + repair"),
+    ("base", "baseline", "Base model"),
+    ("ft", "finetuned", "Fine-tuned"),
+    ("ftr", "finetuned_retrieval", "Fine-tuned + retrieval"),
+    ("repair", "repair", "Fine-tuned + repair"),
 ]
 
 
@@ -48,13 +52,20 @@ def load_jsonl(path: Path) -> list[dict]:
 
 
 def main() -> int:
-    gold = {r["id"]: r for r in load_jsonl(TEST_SET)}
+    parser = argparse.ArgumentParser(description="Build the showcase data file")
+    add_version_argument(parser)
+    args = parser.parse_args()
+    version = get_version(args.version)
+    experiments = version.experiments_root
+
+    gold = {r["id"]: r for r in load_jsonl(version.split("test"))}
+    print(f"benchmark       : {version.name}")
     print(f"test set        : {len(gold)} questions")
 
     runs: dict[str, dict[str, dict]] = {}
     summaries: dict[str, dict] = {}
     for key, directory, label in CONFIGS:
-        base = PROJECT_ROOT / directory
+        base = experiments / directory
         rows = load_jsonl(base / "results.jsonl")
         runs[key] = {r["example_id"]: r for r in rows}
         summary_path = base / "summary.json"

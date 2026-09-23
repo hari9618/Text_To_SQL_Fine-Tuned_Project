@@ -21,7 +21,7 @@ tags:
 A QLoRA-fine-tuned **Qwen3-8B** turns business questions into PostgreSQL against
 a 12-table enterprise schema.
 
-**10.82 % → 50.99 % strict execution accuracy from fine-tuning, and 52.10 % with
+**43.71 % → 68.43 % strict execution accuracy from fine-tuning, and 70.86 % with
 a self-correction loop** — measured on 453 held-out questions by *executing*
 every query against a real database, never by string similarity.
 

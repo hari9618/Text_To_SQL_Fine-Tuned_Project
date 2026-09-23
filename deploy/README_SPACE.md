@@ -16,8 +16,9 @@ Ask a business question in plain English. It becomes PostgreSQL, is validated,
 executed against a read-only session, and the rows come back — with the SQL and
 the full pipeline trace shown, including any self-correction.
 
-**Fine-tuning a Qwen3-8B adapter took strict execution accuracy from 10.82 % to
-50.99 %** on 453 unseen questions. The *Benchmark* tab has the ablation, the
+**Fine-tuning a Qwen3-8B adapter took strict execution accuracy from 43.71 % to
+68.43 %, and 70.86 % with self-correction** on 453 unseen questions. The
+*Benchmark* tab has the ablation, the
 difficulty breakdown, and the honest reading of where the gain came from.
 
 ## What this demo serves
