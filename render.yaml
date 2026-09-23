@@ -30,10 +30,15 @@ services:
       - key: PYTHONPATH
         value: "."
 
-      # Serves the BASE model (10.82 % benchmark accuracy). The fine-tuned
-      # adapter needs a GPU, which the free tier does not have.
+      # Serves the BASE model. The fine-tuned adapter needs a GPU, which the
+      # free tier does not have, so this is NOT the 70.86 % pipeline.
       - key: MODEL_BACKEND
         value: hf
+      # Prompt v2 adds a business glossary and a DATA_AS_OF reference date.
+      # Costs nothing, needs no GPU, and is worth +9.47 pp to the base model
+      # (34.22 % -> 43.71 % strict, both scored on benchmark v2).
+      - key: PROMPT_VERSION
+        value: v2
       # Failover chain, tried in order on each retry. Free providers flip
       # between fine, busy and out-of-credits; depending on one took the demo
       # down twice.

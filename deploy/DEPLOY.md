@@ -87,7 +87,9 @@ the link to someone. Lead with the Hugging Face Space instead — it is static,
 always instant — and keep this URL for showing live SQL execution.
 
 **It serves the base model, not the fine-tuned one** (43.71 % rather than
-70.86 % strict execution accuracy). The adapter needs a GPU; the free tier has
+70.86 % strict execution accuracy), behind **prompt v2** — set by
+`PROMPT_VERSION`, which defaults to `v2`. The glossary is worth +9.47 pp on the
+base model and costs nothing. The adapter needs a GPU; the free tier has
 none. Say so rather than let someone assume otherwise: the deployment
 demonstrates the *pipeline*, the benchmark demonstrates the *fine-tuning*.
 

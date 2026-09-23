@@ -57,7 +57,7 @@ from src.api.schemas import (
     Timings,
 )
 from src.api.service import TextToSQLService
-from src.model.prompt import PROMPT_VERSION, prompt_fingerprint
+from src.api.backends import resolve_prompt
 from src.sql.config import ConfigError, app_config
 from src.sql.executor import DEFAULT_STATEMENT_TIMEOUT_MS
 
@@ -199,7 +199,8 @@ def health(request: Request) -> HealthResponse:
         model=service is not None,
         model_id=service.model.model_id if service else None,
         schema_fingerprint=service.schema_fingerprint if service else None,
-        prompt_fingerprint=prompt_fingerprint(),
+        prompt_fingerprint=(service.model.prompt.prompt_fingerprint()
+                            if service is not None else None),
         detail=detail,
     )
 
@@ -291,5 +292,5 @@ def root() -> Response:
         "service": "Enterprise Text-to-SQL",
         "docs": "/docs",
         "health": "/health",
-        "prompt_version": PROMPT_VERSION,
+        "prompt_version": resolve_prompt().PROMPT_VERSION,
     })

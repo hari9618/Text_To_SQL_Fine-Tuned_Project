@@ -12,11 +12,21 @@ Three backends, selected by the ``MODEL_BACKEND`` environment variable:
 
 **The default is ``hf``, which serves the base model, not the fine-tuned one.**
 That is a hardware constraint, not a design preference: this project's
-development machine has 8 GB of RAM and no GPU, and the adapter needs one. The
-accuracy the API delivers therefore depends on which backend is configured —
-`hf` is the 10.82 % baseline, `local` is the 50.99 % fine-tuned model. Serving
-the adapter in production means running ``local`` on a GPU host, or pushing the
-adapter to a vLLM server with LoRA enabled.
+development machine has 8 GB of RAM and no GPU, and the adapter needs one.
+Serving the adapter in production means running ``local`` on a GPU host, or
+pushing the adapter to a vLLM server with LoRA enabled.
+
+``PROMPT_VERSION`` selects which prompt is rendered, independently of the
+backend. **The default is ``v2``**: it adds a business glossary and a
+``DATA_AS_OF`` reference date, costs nothing, needs no GPU, and is worth
+**+9.47 pp to the base model** (34.22 % -> 43.71 % strict when both are scored
+on benchmark v2). ``PROMPT_VERSION=v1`` restores the frozen baseline prompt,
+which is what the published v1 numbers were measured against.
+
+A prompt and a set of weights belong together: the v2 adapter was trained
+against prompt v2, and rendering v1 for it would be measuring something else.
+``/health`` therefore reports the fingerprint of the prompt actually in use
+rather than a hard-coded constant.
 
 ``stub`` exists so the pipeline, the validation layer, the repair loop and the
 HTTP contract can all be tested without a GPU, a network call, or an API
@@ -38,6 +48,25 @@ from src.model.base_model import (
 )
 
 DEFAULT_BACKEND = "hf"
+DEFAULT_PROMPT_VERSION = "v2"
+
+
+def resolve_prompt(version: str | None = None):
+    """The prompt module this service renders with.
+
+    Selected by ``PROMPT_VERSION`` so a deployment can be moved between prompts
+    without a code change, and so ``/health`` can report what is really served.
+    """
+    name = (version or os.getenv("PROMPT_VERSION", DEFAULT_PROMPT_VERSION)
+            ).strip().lower()
+    if name == "v1":
+        from src.model import prompt as module
+    elif name == "v2":
+        from src.model import prompt_v2 as module
+    else:
+        raise RuntimeError(
+            f"unknown PROMPT_VERSION {name!r}; expected 'v1' or 'v2'")
+    return module
 
 
 class StubModel(TextToSQLModel):
@@ -61,6 +90,7 @@ class StubModel(TextToSQLModel):
         self._repair = repair_responses or {}
         self.calls: list[str] = []
         self.repair_calls: list[list[dict[str, str]]] = []
+        self.prompt = resolve_prompt()
 
     def generate(self, question: str, schema: str) -> GenerationResult:
         self.calls.append(question)
@@ -103,6 +133,7 @@ class LocalAdapterModel(TextToSQLModel):
         model_id: str = DEFAULT_MODEL_ID,
         revision: str | None = "b968826d9c46",
         params: InferenceParams | None = None,
+        prompt=None,
     ) -> None:
         import torch
         from peft import PeftModel
@@ -123,6 +154,7 @@ class LocalAdapterModel(TextToSQLModel):
         self.revision = revision
         self.adapter_dir = adapter_dir
         self.params = params or InferenceParams()
+        self.prompt = prompt or resolve_prompt()
         self._torch = torch
 
         self._tok = AutoTokenizer.from_pretrained(adapter_dir)
@@ -148,9 +180,8 @@ class LocalAdapterModel(TextToSQLModel):
         self._model.eval()
 
     def generate(self, question: str, schema: str) -> GenerationResult:
-        from src.model.prompt import build_messages
-
-        return self.generate_messages(build_messages(question, schema))
+        return self.generate_messages(
+            self.prompt.build_messages(question, schema))
 
     def generate_messages(self, messages: list[dict[str, str]]) -> GenerationResult:
         torch = self._torch
@@ -220,4 +251,5 @@ def _build_hf() -> TextToSQLModel:
         # service tries each in turn rather than depending on one.
         provider=os.getenv("HF_PROVIDER", "nscale,featherless-ai"),
         params=InferenceParams(temperature=0.0, max_tokens=512),
+        prompt=resolve_prompt(),
     )

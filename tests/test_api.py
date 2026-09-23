@@ -209,7 +209,33 @@ def test_health_reports_database_and_model(client):
     assert body["database"] is True
     assert body["model"] is True
     assert body["status"] == "ok"
-    assert body["prompt_fingerprint"] == "8288e41a496531a9"
+    # /health must report the prompt the service actually renders, not a
+    # constant. A deployment moved to another prompt with the endpoint still
+    # claiming the old fingerprint is exactly the drift the fingerprints exist
+    # to catch.
+    from src.api.backends import resolve_prompt
+    assert body["prompt_fingerprint"] == resolve_prompt().prompt_fingerprint()
+    assert body["prompt_fingerprint"] == "4e72cc5f722ce436", "default is prompt v2"
+
+
+def test_prompt_version_env_selects_the_prompt(monkeypatch):
+    """PROMPT_VERSION moves the service between prompts without a code change."""
+    from src.api import backends
+
+    monkeypatch.setenv("PROMPT_VERSION", "v1")
+    assert backends.resolve_prompt().prompt_fingerprint() == "8288e41a496531a9"
+    monkeypatch.setenv("PROMPT_VERSION", "v2")
+    assert backends.resolve_prompt().prompt_fingerprint() == "4e72cc5f722ce436"
+    monkeypatch.setenv("PROMPT_VERSION", "v3")
+    with pytest.raises(RuntimeError, match="unknown PROMPT_VERSION"):
+        backends.resolve_prompt()
+
+
+def test_stub_model_renders_the_configured_prompt():
+    """The stub carries a prompt too, so /health is honest under test."""
+    from src.api.backends import StubModel, resolve_prompt
+
+    assert StubModel().prompt is resolve_prompt()
 
 
 def test_schema_endpoint_matches_the_frozen_fingerprint(client):
